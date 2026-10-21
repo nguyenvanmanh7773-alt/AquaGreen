@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+	<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaGreen Sài Gòn - Hành Trình Giải Cứu Kênh Rạch & Dòng Nước</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- SEO & OpenGraph Meta Tags -->
+    <meta name="description" content="Chiến dịch kết nối cộng đồng bảo vệ kênh rạch Sài Gòn: Bản đồ điểm nóng rác thải, Infographic vòng đời rác, Game vớt rác, 20 câu hỏi Quiz và Thử thách 7 ngày.">
+    <meta property="og:title" content="AquaGreen Sài Gòn - Giải Cứu Kênh Rạch & Dòng Nước">
+    <meta property="og:description" content="Định vị điểm đen rác thải, trải nghiệm game xuồng xanh vớt rác và thử thách 7 ngày cứu dòng nước.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1618477461853-cf6ed80f41cb?auto=format&fit=crop&w=1200&q=80">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        eco: {
+                            dark: '#021e17',
+                            deep: '#053328',
+                            surface: '#09493a',
+                            accent: '#10b981',
+                            lime: '#84cc16'
+                        }
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pulseSlow: {
+                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+                            '50%': { opacity: '0.85', transform: 'scale(1.03)' },
+                        }
+                    },
+                    animation: {
+                        float: 'float 4s ease-in-out infinite',
+                        pulseSlow: 'pulseSlow 3s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #021e17; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #34d399; }
+
+        /* Custom Leaflet Popup */
+        .leaflet-popup-content-wrapper {
+            background: #053328 !important;
+            color: #f1f5f9 !important;
+            border-radius: 14px !important;
+            border: 1px solid rgba(16, 185, 129, 0.5) !important;
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.6) !important;
+            padding: 4px !important;
+        }
+        .leaflet-popup-tip { background: #053328 !important; }
+
+        .ocean-waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(16, 185, 129, 0.12) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        .quiz-opt-btn.correct { background-color: rgba(16, 185, 129, 0.35) !important; border-color: #34d399 !important; color: #fff !important; }
+        .quiz-opt-btn.wrong { background-color: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; color: #fca5a5 !important; }
+    </style>
+</head>
+<body class="bg-eco-dark text-slate-100 font-sans selection:bg-emerald-500 selection:text-white relative bg-grid-pattern">
+
+    <!-- Floating Background Decorative Icons -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-15">
+        <i class="fa-solid fa-leaf text-emerald-400 text-6xl absolute top-28 left-10 animate-float"></i>
+        <i class="fa-solid fa-seedling text-lime-400 text-5xl absolute top-1/3 right-12 animate-float" style="animation-delay: 1s;"></i>
+        <i class="fa-solid fa-recycle text-teal-400 text-6xl absolute bottom-1/4 left-16 animate-float" style="animation-delay: 2s;"></i>
+        <i class="fa-solid fa-droplet text-cyan-400 text-4xl absolute top-2/3 right-1/4 animate-float" style="animation-delay: 1.5s;"></i>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-24 right-5 z-50 transform translate-x-[130%] transition-transform duration-300 ease-out bg-slate-900/95 border-2 border-emerald-500 text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 pointer-events-none max-w-sm">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-2xl"></i>
+        <div>
+            <h4 id="toast-title" class="font-bold text-sm text-emerald-400">Thông báo</h4>
+            <p id="toast-msg" class="text-xs text-slate-300">Nội dung thông báo</p>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-eco-dark/90 backdrop-blur-md border-b border-emerald-500/20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <a href="#hero" class="flex items-center space-x-3 group">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 via-green-500 to-lime-400 flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-105 transition-transform duration-300">
+                        <i class="fa-solid fa-leaf text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-lime-300 to-cyan-400 bg-clip-text text-transparent">AquaGreen</span>
+                        <span class="block text-[10px] tracking-widest uppercase font-bold text-emerald-400">Kết Nối Sài Gòn Xanh</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <nav class="hidden xl:flex items-center space-x-5 text-sm font-semibold text-slate-200">
+                    <a href="#statistics" class="hover:text-emerald-400 transition-colors">Số liệu</a>
+                    <a href="#lifecycle" class="hover:text-emerald-400 transition-colors">Vòng đời rác</a>
+                    <a href="#map-section" class="hover:text-emerald-400 transition-colors">Bản đồ Sài Gòn</a>
+                    <a href="#game-section" class="hover:text-emerald-400 transition-colors">Game Vớt Rác</a>
+                    <a href="#quiz-section" class="hover:text-emerald-400 transition-colors">20 Câu Hỏi & BXH</a>
+                    <a href="#campaigns" class="hover:text-emerald-400 transition-colors">Chiến dịch</a>
+                    <a href="#action-challenge" class="hover:text-emerald-400 transition-colors">Thử thách 7 ngày</a>
+                </nav>
+
+                <!-- Visitor Counter & CTA Button -->
+                <div class="hidden sm:flex items-center space-x-3">
+                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-eco-deep border border-emerald-500/30 text-xs text-emerald-300 font-bold" title="Số lượng người truy cập">
+                        <i class="fa-solid fa-users text-lime-400"></i>
+                        <span id="header-visitor-count">1,280</span>
+                    </div>
+                    <button onclick="openReportModal()" class="px-4 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500 hover:from-emerald-400 hover:to-lime-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Báo cáo điểm rác</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Hamburger -->
+                <div class="xl:hidden flex items-center gap-2">
+                    <div class="sm:hidden flex items-center gap-1 px-2.5 py-1 rounded-lg bg-eco-deep border border-emerald-500/30 text-[11px] text-emerald-300 font-bold">
+                        <i class="fa-solid fa-eye text-lime-400"></i> <span id="mobile-visitor-count">1,280</span>
+                    </div>
+                    <button id="mobile-menu-btn" class="p-2 text-slate-300 hover:text-white focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden xl:hidden bg-eco-deep/95 border-b border-emerald-800/50 px-4 pt-3 pb-6 space-y-2.5">
+            <a href="#statistics" class="mobile-link block py-2 text-slate-200 hover:text-emerald-400 font-medium">Số liệu cảnh báo</a>
+            <a href="#lifecycle" class="mobile-link block py-2 text-slate-200 hover:text-emerald-400 font-medium">Vòng đời rác dưới nước</a>
+            <a href="#map-section" class="mobile-link block py-2 text-slate-200 hover:text-emerald-400 font-medium">Bản đồ điểm nóng Sài Gòn</a>
+            <a href="#game-section" class="mobile-link block py-2 text-slate-200 hover:text-emerald-400 font-medium">Game Đua Xuồng Vớt Rác</a>
+            <a href="#quiz-section" class="mobile-link block py-2 text-slate-200 hover:text-emerald-400 font-medium">Thử thách 20 Câu Hỏi & BXH</a>
+            <a href="#campaigns" class="mobile-link block py-2 text-slate-200 hover:text-emerald-400 font-medium">Chiến dịch tình nguyện</a>
+            <a href="#action-challenge" class="mobile-link block py-2 text-slate-200 hover:text-emerald-400 font-medium">Thử thách 7 ngày</a>
+            <div class="pt-2">
+                <button onclick="openReportModal()" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 text-slate-950 font-extrabold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-location-dot"></i> Báo cáo điểm rác ngay
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative pt-32 pb-28 md:pt-40 md:pb-36 overflow-hidden bg-gradient-to-b from-eco-dark via-eco-deep to-[#042f26]">
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-10 left-10 w-80 h-80 bg-lime-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-400/40 text-emerald-300 text-xs sm:text-sm font-bold mb-6 animate-pulseSlow shadow-lg">
+                    <span class="w-2.5 h-2.5 rounded-full bg-lime-400 animate-ping"></span>
+                    <span>Sạch Sông Xanh Phố • Cảm Hứng Từ Chiến Binh Sài Gòn Xanh</span>
+                </div>
+                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
+                    Giải Cứu Kênh Rạch & Đại Dương Khỏi <br>
+                    <span class="bg-gradient-to-r from-emerald-400 via-lime-300 to-amber-300 bg-clip-text text-transparent">
+                        "Cơn Thủy Triều Rác Nhựa"
+                    </span>
+                </h1>
+                <p class="text-slate-200 text-base sm:text-lg mb-8 leading-relaxed max-w-3xl mx-auto">
+                    Mỗi giây trôi qua, hàng trăm kilogram rác thải từ cống rãnh và kênh rạch đô thị tại TP.HCM trôi thẳng ra sông Sài Gòn và biển Đông. Hãy cùng cộng đồng định vị điểm đen, lội kênh dọn rác và hồi sinh mạch nước!
+                </p>
+
+                <!-- Live Trash Ticker Card -->
+                <div class="bg-white/5 backdrop-blur-md border-2 border-emerald-500/30 rounded-3xl p-6 mb-10 max-w-xl mx-auto shadow-2xl">
+                    <div class="text-xs uppercase tracking-wider text-emerald-300 font-bold mb-1 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-water text-cyan-400"></i>
+                        <span>Rác nhựa trôi vào nguồn nước từ đầu năm nay:</span>
+                    </div>
+                    <div class="flex items-center justify-center gap-2 font-mono text-3xl sm:text-5xl font-extrabold text-amber-400 my-1">
+                        <span id="live-trash-counter">8,412,940</span>
+                        <span class="text-base sm:text-lg font-sans text-emerald-300 font-bold">Kilogram</span>
+                    </div>
+                    <div class="text-[11px] text-slate-300 italic">
+                        *Ước tính theo tốc độ xả thải rác nhựa qua các lưu vực sông (~340 kg/giây)
+                    </div>
+                </div>
+
+                <!-- Call to actions -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="#game-section" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-lime-400 hover:from-emerald-400 hover:to-lime-300 text-slate-950 font-extrabold shadow-xl shadow-emerald-500/25 transition-all transform hover:-translate-y-1 text-center flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-gamepad text-lg"></i>
+                        <span>Chơi Game Vớt Rác Kênh</span>
+                    </a>
+                    <button onclick="openReportModal()" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold shadow-xl shadow-amber-500/20 transition-all transform hover:-translate-y-1 text-center flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-camera-retro text-lg"></i>
+                        <span>Ghim Điểm Rác Lên Bản Đồ</span>
+                    </button>
+                    <a href="#quiz-section" class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-eco-surface/90 hover:bg-emerald-800 border border-emerald-400/40 text-lime-300 font-bold transition-all text-center flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-question text-lg"></i>
+                        <span>Thử Thách 20 Câu Hỏi</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wave Graphic Separator -->
+        <div class="ocean-waves">
+            <svg class="w-full h-16 sm:h-24" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,0 C150,90 350,-40 500,50 C650,140 900,10 1200,60 L1200,120 L0,120 Z" fill="#053328" opacity="0.6"></path>
+                <path d="M0,20 C200,100 450,10 650,70 C850,130 1050,30 1200,70 L1200,120 L0,120 Z" fill="#021e17"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Section 1: Thống Kê Ô Nhiễm Nguồn Nước & Cảm Hứng Sài Gòn Xanh -->
+    <section id="statistics" class="py-20 bg-eco-dark relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Banner Cảm hứng Sài Gòn Xanh -->
+            <div class="mb-16 bg-gradient-to-r from-emerald-900/90 via-teal-900/80 to-eco-deep border-2 border-emerald-400/40 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col lg:flex-row items-center gap-8">
+                <div class="w-full lg:w-1/3 relative rounded-2xl overflow-hidden border-2 border-lime-400/40 shadow-lg h-60">
+              <img src="https://saigonxanh-eb662.web.app/images/video-banner-1.png" alt="Chiến binh Sài Gòn Xanh dọn rác kênh rạch" class="w-full h-full object-cover">
+                    <div class="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-extrabold text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-heart"></i> Cảm hứng thực tế tại TP.HCM
+                    </div>
+                </div>
+                <div class="flex-1 space-y-4">
+                    <div class="inline-flex items-center gap-2 text-lime-400 font-extrabold text-xs uppercase tracking-widest">
+                        <i class="fa-solid fa-award text-base"></i> Tấm Gương Hành Động Vì Dòng Nước
+                    </div>
+                    <h3 class="text-2xl sm:text-3xl font-extrabold text-white">Kết Nối Tinh Thần "Sài Gòn Xanh" – Không Ngại Đen Bẩn Vì Dòng Kênh Sạch</h3>
+                    <p class="text-slate-200 text-sm leading-relaxed">
+                        Tại TP. Hồ Chí Minh, những điểm nóng như <strong>Rạch Lăng (Bình Thạnh), Kênh Hy Vọng (Tân Bình), Kênh Đôi (Quận 8)</strong> từng bị bủa vây bởi hàng chục tấn rác xốp, túi nilon, nệm cũ và lục bình ứ đọng. Nhóm tình nguyện <strong>Sài Gòn Xanh</strong> cùng hàng ngàn bạn trẻ đã mặc đồ bảo hộ, lội xuống dòng nước đen đặc để vớt từng bao tải rác, lắp phao chắn rác và trả lại dòng chảy trong lành cho thành phố.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <div class="px-4 py-2 rounded-xl bg-black/30 border border-emerald-500/30 text-xs">
+                            <span class="font-extrabold text-lime-400 text-base">300+</span> Chiến dịch ra quân
+                        </div>
+                        <div class="px-4 py-2 rounded-xl bg-black/30 border border-emerald-500/30 text-xs">
+                            <span class="font-extrabold text-amber-400 text-base">2,500+ Tấn</span> Rác kênh rạch được thu gom
+                        </div>
+                        <div class="px-4 py-2 rounded-xl bg-black/30 border border-emerald-500/30 text-xs">
+                            <span class="font-extrabold text-cyan-400 text-base">50+</span> Phao chắn rác lắp đặt
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center max-w-2xl mx-auto mb-14">
+                <h2 class="text-xs uppercase tracking-widest text-lime-400 font-bold mb-2">Thực Trạng Khẩn Cấp</h2>
+                <h3 class="text-3xl sm:text-4xl font-extrabold text-white">Những Con Số "Biết Nói" Về Rác Dưới Nước</h3>
+                <p class="text-slate-300 text-sm sm:text-base mt-3">Hàng triệu sinh vật thủy sinh đang trả giá cho thói quen xả rác nhựa dùng một lần xuống cống rãnh và sông ngòi.</p>
+            </div>
+
+            <!-- 4 Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-eco-deep/90 border-2 border-red-500/30 rounded-2xl p-6 relative overflow-hidden group hover:border-red-400 transition-all hover:-translate-y-1.5 shadow-xl">
+                    <div class="w-12 h-12 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-dumpster-fire"></i>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-extrabold text-white mb-2">11 Triệu</div>
+                    <div class="text-sm font-bold text-red-300 mb-2">Tấn rác nhựa/năm</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">Khối lượng rác đổ thẳng vào đại dương hằng năm, dự kiến sẽ tăng gấp 3 lần vào năm 2040 nếu không chặn từ các dòng sông.</p>
+                </div>
+
+                <div class="bg-eco-deep/90 border-2 border-emerald-500/30 rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-400 transition-all hover:-translate-y-1.5 shadow-xl">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-extrabold text-white mb-2">80%</div>
+                    <div class="text-sm font-bold text-emerald-300 mb-2">Bắt nguồn từ kênh rạch</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">Rác biển chủ yếu được cuốn trôi từ các miệng cống thoát nước đô thị, kênh rạch nội đô và các con sông lớn trước khi ra biển.</p>
+                </div>
+
+                <div class="bg-eco-deep/90 border-2 border-amber-500/30 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-400 transition-all hover:-translate-y-1.5 shadow-xl">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-fish-fins"></i>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-extrabold text-white mb-2">100,000+</div>
+                    <div class="text-sm font-bold text-amber-300 mb-2">Sinh vật nước chết/năm</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">Cá và rùa biển ăn phải bao nilon vì nhầm là sứa, chim nước và cá heo mắc kẹt trong "lưới ma" bỏ hoang dưới đáy nước.</p>
+                </div>
+
+                <div class="bg-eco-deep/90 border-2 border-cyan-500/30 rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-400 transition-all hover:-translate-y-1.5 shadow-xl">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-dna"></i>
+                    </div>
+                    <div class="text-3xl sm:text-4xl font-extrabold text-white mb-2">5.25 Nghìn Tỷ</div>
+                    <div class="text-sm font-bold text-cyan-300 mb-2">Mảnh vi nhựa trôi nổi</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">Rác nhựa phân rã thành hạt vi nhựa (nhỏ hơn 5mm), tích tụ trong tôm cá sông biển và đi ngược lại vào cơ thể con người.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Vòng Đời Rác Thải Dưới Nước (Interactive Infographic) -->
+    <section id="lifecycle" class="py-20 bg-gradient-to-b from-eco-dark to-eco-deep border-y border-emerald-500/20 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-14">
+                <span class="text-xs uppercase tracking-widest text-lime-400 font-bold">Infographic Trực Quan</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Vòng Đời Rác Thải Dưới Lòng Nước</h2>
+                <p class="text-slate-300 text-sm mt-3">Một chiếc chai nhựa hay hộp xốp bạn dùng trong 15 phút sẽ tồn tại dưới đáy sông qua hàng chục thế hệ. <strong class="text-lime-300">Nhấp vào từng loại rác</strong> để xem chi tiết tác hại!</p>
+            </div>
+
+            <!-- 6 Trash Type Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="lifecycle-container"></div>
+
+            <!-- Interactive Detail Box -->
+            <div id="trash-detail-box" class="mt-8 p-6 sm:p-8 bg-slate-900/90 border-2 border-emerald-400/50 rounded-3xl flex flex-col md:flex-row items-center gap-6 transition-all duration-300 shadow-2xl">
+                <div class="w-24 h-24 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-5xl text-emerald-400 flex-shrink-0" id="detail-icon">
+                    <i class="fa-solid fa-bottle-water"></i>
+                </div>
+                <div class="space-y-2.5 text-center md:text-left flex-1">
+                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                        <h4 class="text-2xl font-extrabold text-white" id="detail-title">Chai nhựa PET</h4>
+                        <span class="px-3.5 py-1 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40" id="detail-years">Thời gian phân hủy: 450 Năm</span>
+                    </div>
+                    <p class="text-sm text-slate-200 leading-relaxed" id="detail-desc"></p>
+                    <div class="text-xs text-lime-400 font-bold pt-1" id="detail-impact"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Bản Đồ Điểm Nóng Kênh Rạch Sài Gòn -->
+    <section id="map-section" class="py-20 bg-eco-dark relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-8">
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-lime-400 font-bold">Giám Sát Cộng Đồng • Hoạt Động 100%</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Bản Đồ Điểm Nóng Rác Kênh Rạch Sài Gòn</h2>
+                    <p class="text-slate-300 text-sm mt-2">Bấm vào điểm trên bản đồ hoặc chọn từ danh sách bên phải để xem chi tiết. Bạn cũng có thể <strong>nhấp trực tiếp lên bản đồ</strong> để ghim điểm rác mới!</p>
+                </div>
+                <!-- Map Style Switcher & Legend -->
+                <div class="mt-4 lg:mt-0 flex flex-wrap items-center gap-2.5 text-xs">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-950/90 border border-red-500/50 text-red-300 font-bold">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Nghiêm trọng
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-950/90 border border-amber-500/50 text-amber-300 font-bold">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Cảnh báo
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 font-bold">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Đã giải cứu xanh
+                    </span>
+                    <button onclick="switchMapLayer()" class="px-3.5 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-emerald-500/40 text-emerald-300 font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-layer-group"></i> <span id="map-style-label">Đổi nền Vệ Tinh</span>
+                    </button>
+                    <button onclick="openReportModal()" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-lime-500 text-slate-950 font-extrabold flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> Báo điểm mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Map & Sidebar Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Map Viewport -->
+                <div class="lg:col-span-2 bg-eco-deep rounded-3xl border-2 border-emerald-500/40 overflow-hidden shadow-2xl h-[520px] relative z-10">
+                    <div id="hotspot-map" class="w-full h-full cursor-crosshair"></div>
+                </div>
+
+                <!-- Hotspot List Sidebar -->
+                <div class="bg-eco-deep/90 border-2 border-emerald-500/30 rounded-3xl p-5 flex flex-col h-[520px] shadow-2xl">
+                    <div class="flex items-center justify-between pb-3 border-b border-emerald-500/20 mb-3">
+                        <h4 class="font-extrabold text-white text-base flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-lime-400"></i>
+                            <span>Điểm Giám Sát Tại TP.HCM (<span id="hotspot-count">6</span>)</span>
+                        </h4>
+                        <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">Live</span>
+                    </div>
+
+                    <div id="hotspot-list" class="space-y-3 overflow-y-auto pr-1 flex-1"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Mini-Game Nâng Cấp: Đua Xuồng Vớt Rác Kênh Rạch -->
+    <section id="game-section" class="py-20 bg-gradient-to-b from-eco-dark via-[#032820] to-eco-deep border-t border-emerald-500/20 relative z-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <span class="px-4 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-lime-500/20 text-lime-300 border border-lime-500/40">
+                    Mini-Game Tương Tác Nâng Cấp
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-2">Chiến Binh Sài Gòn Xanh: Vượt Kênh Vớt Rác</h2>
+                <p class="text-slate-300 text-sm max-w-2xl mx-auto mt-2">
+                    Điều khiển xuồng cứu hộ lướt dọc dòng kênh, thu gom <span class="text-amber-300 font-bold">Chai nhựa, Túi nilon, Hộp xốp, Lốp xe</span> để tích Combo. Thu thập <span class="text-cyan-300 font-bold">Nam châm 🧲 & Khiên 🛡️</span>, và cẩn thận né <span class="text-red-400 font-bold">Đá ngầm, Gỗ mục & Rùa cá</span>!
+                </p>
+            </div>
+
+            <!-- Game Frame -->
+            <div class="bg-eco-surface/60 border-2 border-emerald-400/40 rounded-3xl p-4 sm:p-6 shadow-2xl">
+                <!-- Game HUD -->
+                <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-emerald-500/20">
+                    <div class="flex flex-wrap items-center gap-5 sm:gap-8">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-300 uppercase font-bold">Điểm Số</div>
+                                <div class="text-2xl font-extrabold text-white font-mono" id="game-score">0</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-lime-500/20 text-lime-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-fire"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-300 uppercase font-bold">Combo</div>
+                                <div class="text-2xl font-extrabold text-lime-400 font-mono" id="game-combo">x1</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-300 uppercase font-bold">Thời Gian</div>
+                                <div class="text-2xl font-extrabold text-white font-mono"><span id="game-time">45</span>s</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-heart"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-300 uppercase font-bold">Độ Bền Xuồng</div>
+                                <div class="flex gap-1 text-lg" id="game-lives">
+                                    <span class="text-red-500">♥</span><span class="text-red-500">♥</span><span class="text-red-500">♥</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button id="sound-toggle-btn" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-emerald-500/30">
+                            <i class="fa-solid fa-volume-high text-emerald-400" id="sound-icon"></i>
+                            <span>Âm thanh</span>
+                        </button>
+                        <button id="boost-btn" onclick="activateBoost()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-md transition-all">
+                            <i class="fa-solid fa-bolt mr-1"></i> Tăng Tốc (Space)
+                        </button>
+                        <button id="start-game-btn" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 text-slate-950 font-extrabold text-sm shadow-md">
+                            <i class="fa-solid fa-play mr-1"></i> Chơi Mới
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas Container -->
+                <div class="relative w-full rounded-2xl overflow-hidden bg-[#042430] border-2 border-emerald-500/40 h-[440px] select-none" id="canvas-wrapper">
+                    <canvas id="game-canvas" class="w-full h-full block cursor-pointer touch-none"></canvas>
+
+                    <!-- Start / Game Over Overlay -->
+                    <div id="game-overlay" class="absolute inset-0 bg-eco-dark/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-lime-400 flex items-center justify-center text-3xl text-slate-950 mb-4 shadow-xl">
+                            <i class="fa-solid fa-person-swimming"></i>
+                        </div>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-white mb-2" id="overlay-title">Biệt Đội Xuồng Xanh Cứu Kênh</h3>
+                        <div class="text-sm text-slate-200 max-w-lg mb-6 space-y-2" id="overlay-desc">
+                            <p>Di chuyển chuột, chạm màn hình hoặc dùng phím mũi tên <kbd class="px-2 py-0.5 bg-slate-800 rounded border border-emerald-500/40">←</kbd> <kbd class="px-2 py-0.5 bg-slate-800 rounded border border-emerald-500/40">→</kbd> <kbd class="px-2 py-0.5 bg-slate-800 rounded border border-emerald-500/40">↑</kbd> <kbd class="px-2 py-0.5 bg-slate-800 rounded border border-emerald-500/40">↓</kbd> để lái xuồng vớt rác.</p>
+                            <div class="flex flex-wrap justify-center gap-2.5 text-xs pt-2">
+                                <span class="px-3 py-1 rounded-lg bg-emerald-950 border border-emerald-500/30">🍾 Chai nhựa: +10đ</span>
+                                <span class="px-3 py-1 rounded-lg bg-emerald-950 border border-emerald-500/30">🛍️ Túi nilon: +15đ</span>
+                                <span class="px-3 py-1 rounded-lg bg-emerald-950 border border-emerald-500/30">🛞 Lốp xe: +25đ</span>
+                                <span class="px-3 py-1 rounded-lg bg-cyan-950 border border-cyan-500/30">🧲 Hút rác tự động</span>
+                                <span class="px-3 py-1 rounded-lg bg-red-950 border border-red-500/30">🐢 Rùa / 🪨 Đá: -1 Tim</span>
+                            </div>
+                        </div>
+                        <button id="overlay-action-btn" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-400 hover:scale-105 text-slate-950 font-extrabold text-base shadow-xl transition-transform">
+                            Xuất Phát Dọn Kênh Ngay!
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile Touch Controls -->
+                <div class="flex justify-center gap-4 md:hidden mt-4">
+                    <button id="mob-left" class="w-14 h-14 rounded-2xl bg-eco-deep border border-emerald-500/40 active:bg-emerald-500 text-xl text-white"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button id="mob-up" class="w-14 h-14 rounded-2xl bg-eco-deep border border-emerald-500/40 active:bg-emerald-500 text-xl text-white"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button id="mob-down" class="w-14 h-14 rounded-2xl bg-eco-deep border border-emerald-500/40 active:bg-emerald-500 text-xl text-white"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button id="mob-right" class="w-14 h-14 rounded-2xl bg-eco-deep border border-emerald-500/40 active:bg-emerald-500 text-xl text-white"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: 20 Câu Hỏi Tương Tác & Bảng Xếp Hạng -->
+    <section id="quiz-section" class="py-20 bg-eco-dark border-t border-emerald-500/20 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="text-xs uppercase tracking-widest text-lime-400 font-bold">Kiến Thức & Vinh Danh</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Thử Thách 20 Câu Hỏi & Bảng Xếp Hạng</h2>
+                <p class="text-slate-300 text-sm mt-2">Trả lời đúng mỗi câu nhận ngay <strong class="text-amber-400">+50 điểm</strong> cộng trực tiếp vào Bảng Xếp Hạng Chiến Binh Xanh!</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left 8 Cols: 20 Questions Interactive Quiz -->
+                <div class="lg:col-span-8 bg-eco-deep/90 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+                    <div>
+                        <!-- Progress Header -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-emerald-500/20">
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-extrabold text-xs">
+                                    Câu <span id="quiz-current-idx">1</span> / 20
+                                </span>
+                                <span class="text-xs text-slate-300" id="quiz-topic-tag">Chủ đề: Rác thải dưới nước</span>
+                            </div>
+                            <div class="flex items-center gap-4 text-sm font-bold">
+                                <span class="text-emerald-400"><i class="fa-solid fa-check mr-1"></i>Đúng: <span id="quiz-correct-count">0</span></span>
+                                <span class="text-amber-400"><i class="fa-solid fa-star mr-1"></i>Điểm Quiz: <span id="quiz-points">0</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden mb-6">
+                            <div id="quiz-progress-bar" class="bg-gradient-to-r from-emerald-500 to-lime-400 h-full transition-all duration-300" style="width: 5%"></div>
+                        </div>
+
+                        <!-- Question Title -->
+                        <h3 id="quiz-question-text" class="text-lg sm:text-xl font-extrabold text-white mb-6 leading-snug min-h-[56px]">
+                            Đang tải câu hỏi...
+                        </h3>
+
+                        <!-- Options Grid -->
+                        <div id="quiz-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6"></div>
+
+                        <!-- Explanation Box -->
+                        <div id="quiz-explanation-box" class="hidden p-4 rounded-2xl bg-slate-900/90 border border-emerald-400/40 text-xs sm:text-sm text-slate-200 mb-6 leading-relaxed"></div>
+                    </div>
+
+                    <!-- Quiz Footer Controls -->
+                    <div class="flex items-center justify-between pt-4 border-t border-emerald-500/20">
+                        <button onclick="resetQuiz()" class="text-xs text-slate-400 hover:text-white font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-right"></i> Làm lại từ câu 1
+                        </button>
+                        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg">
+                            Câu Tiếp Theo <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right 4 Cols: Leaderboard -->
+                <div class="lg:col-span-4 bg-eco-deep/90 border-2 border-amber-500/40 rounded-3xl p-6 shadow-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3 pb-3 border-b border-white/10">
+                            <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-ranking-star text-amber-400"></i>
+                                <span>Bảng Xếp Hạng Tuần</span>
+                            </h3>
+                            <span id="db-mode-badge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">Top Chiến Binh</span>
+                        </div>
+                        <p class="text-xs text-slate-300 mb-4">Tổng hợp điểm của bạn (<strong class="text-lime-400"><span id="my-total-score">0</span> đ</strong>) từ Game + Quiz + Ghim Bản Đồ + Thử Thách 7 Ngày.</p>
+
+                        <div id="leaderboard-list" class="space-y-2.5 max-h-[340px] overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-white/10 bg-slate-900/70 p-4 rounded-2xl border border-emerald-500/30">
+                        <div class="text-xs text-emerald-300 font-bold mb-1.5">Ghi danh / Cập nhật tên & điểm lên Bảng Vàng:</div>
+                        <div class="flex gap-2">
+                            <input type="text" id="player-name-input" maxlength="25" placeholder="Nhập tên của bạn..." class="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-400">
+                            <button onclick="updatePlayerName()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition">Lưu BXH</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Lịch Ra Quân Chiến Dịch Dọn Rác -->
+    <section id="campaigns" class="py-20 bg-gradient-to-b from-eco-dark to-eco-deep border-t border-emerald-500/20 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-lime-400 font-bold">Hành Động Thực Tế Cùng Cộng Đồng</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Lịch Ra Quân Tình Nguyện Dọn Kênh</h2>
+                    <p class="text-slate-300 text-sm mt-2">Trang bị đầy đủ đồ bảo hộ, găng tay chống cắt, ủng cao su và tiêm phòng trước khi xuống kênh.</p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <button onclick="openVolunteerModal('Đăng ký chung Biệt Đội Xanh')" class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 text-slate-950 font-extrabold text-sm shadow-lg hover:opacity-95">
+                        <i class="fa-solid fa-user-plus mr-1.5"></i> Đăng Ký Tình Nguyện Viên
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Campaign 1 -->
+                <div class="bg-eco-deep/80 rounded-3xl border-2 border-emerald-500/30 overflow-hidden flex flex-col justify-between hover:border-lime-400 transition-all group shadow-xl">
+                    <div class="relative h-48 bg-slate-800 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80" alt="Dọn rác kênh rạch" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500 text-slate-950">Chủ Nhật Tuần Này</span>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 text-xs text-lime-400 font-bold mb-2">
+                                <i class="fa-regular fa-calendar"></i> 25/10/2026 • 07:00 AM • Bình Thạnh
+                            </div>
+                            <h3 class="text-lg font-extrabold text-white mb-2">Chiến Dịch Giải Cứu Rạch Lăng & Lắp Phao Chắn Rác</h3>
+                            <p class="text-xs text-slate-300 mb-4">Vớt rác xốp, túi nilon ứ đọng dưới gầm cầu Băng Ky và gia cố hệ thống phao chắn rác tự chế ngăn trôi ra sông Sài Gòn.</p>
+                            <div class="space-y-1 mb-5">
+                                <div class="flex justify-between text-xs text-slate-300 font-semibold">
+                                    <span>Tình nguyện viên đã đăng ký:</span>
+                                    <span class="text-lime-400 font-bold">44 / 50</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-emerald-500 to-lime-400 h-full rounded-full" style="width: 88%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="openVolunteerModal('Chiến Dịch Giải Cứu Rạch Lăng')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+                            <span>Tham gia chiến dịch này</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campaign 2 -->
+                <div class="bg-eco-deep/80 rounded-3xl border-2 border-emerald-500/30 overflow-hidden flex flex-col justify-between hover:border-lime-400 transition-all group shadow-xl">
+                    <div class="relative h-48 bg-slate-800 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80" alt="Làm sạch biển Cần Giờ" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-extrabold bg-cyan-400 text-slate-950">Sắp Ra Quân</span>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 text-xs text-lime-400 font-bold mb-2">
+                                <i class="fa-regular fa-calendar"></i> 01/11/2026 • 06:30 AM • Cần Giờ
+                            </div>
+                            <h3 class="text-lg font-extrabold text-white mb-2">Làm Sạch Rừng Ngập Mặn & Bãi Biển 30/4 Cần Giờ</h3>
+                            <p class="text-xs text-slate-300 mb-4">Thu gom lưới ma, phao xốp và rác nhựa đại dương dạt vào rễ cây đước rừng ngập mặn Cần Giờ sau đợt triều cường.</p>
+                            <div class="space-y-1 mb-5">
+                                <div class="flex justify-between text-xs text-slate-300 font-semibold">
+                                    <span>Tình nguyện viên đã đăng ký:</span>
+                                    <span class="text-cyan-400 font-bold">68 / 80</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-cyan-400 h-full rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="openVolunteerModal('Làm Sạch Biển Rừng Cần Giờ')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+                            <span>Tham gia chiến dịch này</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campaign 3 -->
+                <div class="bg-eco-deep/80 rounded-3xl border-2 border-emerald-500/30 overflow-hidden flex flex-col justify-between hover:border-lime-400 transition-all group shadow-xl">
+                    <div class="relative h-48 bg-slate-800 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80" alt="Kênh Đôi Quận 8" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950">Đang Tuyển Quân</span>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 text-xs text-lime-400 font-bold mb-2">
+                                <i class="fa-regular fa-calendar"></i> 08/11/2026 • 07:30 AM • Quận 8
+                            </div>
+                            <h3 class="text-lg font-extrabold text-white mb-2">Giải Cứu Nhánh Kênh Đôi & Tuyên Truyền Phân Loại Rác</h3>
+                            <p class="text-xs text-slate-300 mb-4">Phối hợp đội xuồng hơi vớt rác nổi và tặng thùng rác phân loại cho các hộ dân sinh sống dọc ven Kênh Đôi.</p>
+                            <div class="space-y-1 mb-5">
+                                <div class="flex justify-between text-xs text-slate-300 font-semibold">
+                                    <span>Tình nguyện viên đã đăng ký:</span>
+                                    <span class="text-amber-400 font-bold">28 / 40</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-amber-400 h-full rounded-full" style="width: 70%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="openVolunteerModal('Giải Cứu Nhánh Kênh Đôi Quận 8')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+                            <span>Tham gia chiến dịch này</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Giải Pháp Công Nghệ & Thử Thách 7 Ngày Sống Xanh -->
+    <section id="action-challenge" class="py-20 bg-eco-dark border-t border-emerald-500/20 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left 6 Cols: Công Nghệ Chặn Rác -->
+                <div class="lg:col-span-6 space-y-6">
+                    <span class="text-xs uppercase tracking-widest text-lime-400 font-bold">Giải Pháp Bền Vững</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Công Nghệ Chặn Rác Từ Kênh Rạch Ra Đại Dương</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        80% rác nhựa đại dương bắt nguồn từ các dòng kênh đô thị. Bên cạnh sức người lội kênh vớt rác, việc ứng dụng phao chắn rác (Trash Boom), tàu thu gom năng lượng mặt trời và vi sinh vật làm sạch nước là giải pháp căn cơ.
+                    </p>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-eco-deep/80 border border-emerald-500/30">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-life-ring"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm">Phao Chắn Rác Nổi (Trash Boom)</h4>
+                                <p class="text-xs text-slate-300 mt-1">Hệ thống phao nổi giăng chéo dòng kênh giúp gom toàn bộ rác trôi nổi về một góc bờ theo dòng chảy thủy triều, giúp thu gom nhanh gấp 5 lần.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-eco-deep/80 border border-emerald-500/30">
+                            <div class="w-11 h-11 rounded-xl bg-lime-500/20 text-lime-400 flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-solar-panel"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm">Tàu Hút Rác Mặt Nước Năng Lượng Mặt Trời</h4>
+                                <p class="text-xs text-slate-300 mt-1">Băng tải tự động đưa rác nhựa trên sông Sài Gòn vào khoang chứa 24/7 bằng điện mặt trời mà không phát thải khí nhà kính.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-eco-deep/80 border border-emerald-500/30">
+                            <div class="w-11 h-11 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-vial-circle-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm">Quả Cầu Vi Sinh (Eco-enzim) Khử Mùi & Làm Trong Nước</h4>
+                                <p class="text-xs text-slate-300 mt-1">Sau khi vớt sạch rác cứng, thả chế phẩm sinh học giúp phân hủy bùn hữu cơ đáy kênh và phục hồi lượng Oxy hòa tan cho cá tôm.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 6 Cols: Thử Thách 7 Ngày -->
+                <div class="lg:col-span-6">
+                    <div class="bg-gradient-to-br from-eco-deep to-slate-900 border-2 border-emerald-400/40 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <span class="text-xs font-extrabold text-lime-400 uppercase tracking-wider">Cam Kết Cá Nhân</span>
+                                <h3 class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">Thử Thách: "7 Ngày Cứu Dòng Nước"</h3>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-slate-300">Tiến độ</div>
+                                <span id="challenge-progress-text" class="text-xl font-extrabold text-lime-400">0/7</span>
+                            </div>
+                        </div>
+
+                        <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden mb-6">
+                            <div id="challenge-progress-bar" class="bg-gradient-to-r from-emerald-500 to-lime-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+
+                        <div class="space-y-2.5 text-sm" id="challenge-list"></div>
+
+                        <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-300">
+                            <span>Hoàn thành 7/7 ngày để nhận <strong class="text-amber-400">+200đ</strong> vào Bảng Xếp Hạng!</span>
+                            <button onclick="resetChallenge()" class="text-lime-400 font-bold hover:underline">Làm lại từ đầu</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal: Báo Cáo Điểm Rác Mới -->
+    <div id="report-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-eco-deep border-2 border-emerald-400/50 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative">
+            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-slate-300 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Báo Cáo Điểm Rác Kênh Rạch</h3>
+                    <p class="text-xs text-slate-300">Ghim trực tiếp lên bản đồ cộng đồng (<span class="text-lime-400 font-bold">+30 điểm thưởng</span>)</p>
+                </div>
+            </div>
+
+            <form id="report-form" class="space-y-4">
+                <input type="hidden" id="report-lat">
+                <input type="hidden" id="report-lng">
+                <div>
+                    <label class="block text-xs font-bold text-slate-200 mb-1">Tên đoạn kênh / Địa chỉ cụ thể <span class="text-red-400">*</span></label>
+                    <input type="text" id="report-name" required maxlength="70" placeholder="VD: Rạch Xuyên Tâm đoạn Cầu Sơn, Bình Thạnh" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white text-sm focus:outline-none focus:border-lime-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-200 mb-1">Quận / Khu vực <span class="text-red-400">*</span></label>
+                        <select id="report-city" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white text-sm focus:outline-none">
+                            <option value="Quận Bình Thạnh, TP.HCM">Bình Thạnh, TP.HCM</option>
+                            <option value="Quận Gò Vấp, TP.HCM">Gò Vấp, TP.HCM</option>
+                            <option value="Quận 8, TP.HCM">Quận 8, TP.HCM</option>
+                            <option value="Quận Tân Bình, TP.HCM">Tân Bình, TP.HCM</option>
+                            <option value="TP. Thủ Đức, TP.HCM">TP. Thủ Đức, TP.HCM</option>
+                            <option value="Huyện Cần Giờ, TP.HCM">Cần Giờ, TP.HCM</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-200 mb-1">Mức độ ô nhiễm <span class="text-red-400">*</span></label>
+                        <select id="report-level" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white text-sm focus:outline-none">
+                            <option value="critical">🔴 Nghiêm trọng (Đen đặc, kín rác)</option>
+                            <option value="warning">🟡 Cảnh báo (Rác ứ đọng bờ)</option>
+                            <option value="cleaned">🟢 Đã giải cứu xanh</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-200 mb-1">Mô tả chi tiết tình trạng</label>
+                    <textarea id="report-notes" rows="2" maxlength="160" placeholder="VD: Rác hộp xốp và túi nilon ứ đọng nhiều dưới chân cầu..." class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-emerald-500/40 text-white text-sm focus:outline-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                    <button type="button" onclick="closeReportModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">Hủy</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 text-slate-950 text-xs font-extrabold shadow-md">
+                        <i class="fa-solid fa-paper-plane mr-1"></i> Ghim Lên Bản Đồ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Đăng Ký Tình Nguyện Viên -->
+    <div id="volunteer-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-eco-deep border-2 border-emerald-400/50 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative">
+            <button onclick="closeVolunteerModal()" class="absolute top-4 right-4 text-slate-300 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-lime-400 flex items-center justify-center text-2xl mx-auto mb-2">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-white">Đăng Ký Chiến Binh Xanh</h3>
+                <p class="text-xs text-lime-300 mt-1 font-semibold" id="volunteer-target-campaign">Chiến dịch dọn rác kênh rạch</p>
+            </div>
+
+            <form id="volunteer-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-200 mb-1">Họ và tên <span class="text-red-400">*</span></label>
+                    <input type="text" id="vol-name" required maxlength="50" placeholder="Nguyễn Văn A" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-200 mb-1">Số điện thoại / Zalo (10 số) <span class="text-red-400">*</span></label>
+                    <input type="tel" id="vol-phone" required pattern="[0-9]{10}" placeholder="0901234567" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-200 mb-1">Email nhận lịch tập trung <span class="text-red-400">*</span></label>
+                    <input type="email" id="vol-email" required placeholder="ban@email.com" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white text-sm focus:outline-none">
+                </div>
+                <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 text-slate-950 font-extrabold text-sm shadow-lg">
+                    Xác Nhận Đăng Ký
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black/90 border-t border-emerald-500/20 pt-14 pb-10 text-slate-400 text-sm relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-lime-400 flex items-center justify-center text-slate-950 font-bold">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <span class="text-lg font-extrabold text-white">AquaGreen Sài Gòn • Sạch Sông Xanh Phố</span>
+            </div>
+            <div class="text-xs text-slate-400 text-center sm:text-right">
+                <p>© 2026 Hành Trình Giải Cứu Dòng Nước. Lan tỏa tinh thần Sài Gòn Xanh.</p>
+                <p class="mt-1">Tổng lượt truy cập chung tay: <span id="footer-visitor-count" class="text-emerald-400 font-bold">1,280</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= 1. MAIN JAVASCRIPT LOGIC ================= -->
+    <script>
+        // Hàm lọc chống XSS bảo mật cho nội dung người dùng nhập
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        }
+
+        // Mobile Menu Toggle
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+        });
+
+        // 1. LIVE COUNTER
+        let trashCounter = 8412940;
+        setInterval(() => {
+            trashCounter += Math.floor(Math.random() * 9) + 11;
+            const el = document.getElementById('live-trash-counter');
+            if (el) el.innerText = trashCounter.toLocaleString('en-US');
+        }, 500);
+
+        // Toast Helper
+        window.showToast = function(title, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.remove('translate-x-[130%]');
+            setTimeout(() => toast.classList.add('translate-x-[130%]'), 3500);
+        };
+
+        // Quản lý tổng điểm cá nhân của người chơi
+        window.userTotalPoints = parseInt(localStorage.getItem('aquagreen_user_points') || '0');
+        window.userName = localStorage.getItem('aquagreen_user_name') || 'Chiến Binh Xanh (Bạn)';
+        document.getElementById('player-name-input').value = window.userName === 'Chiến Binh Xanh (Bạn)' ? '' : window.userName;
+
+        window.addPointsToUser = function(pts, reason) {
+            window.userTotalPoints += pts;
+            localStorage.setItem('aquagreen_user_points', window.userTotalPoints);
+            document.getElementById('my-total-score').innerText = window.userTotalPoints;
+            if (reason) window.showToast(`+${pts} Điểm Thưởng!`, reason);
+            if (typeof window.syncUserScoreToBoard === 'function') {
+                window.syncUserScoreToBoard(window.userName, window.userTotalPoints);
+            }
+        };
+        document.getElementById('my-total-score').innerText = window.userTotalPoints;
+
+        // 2. LIFECYCLE DATA & RENDER
+        const trashLifecycleData = [
+            {
+                id: 'ghost-net', name: 'Lưới ma (Ngư cụ hỏng)', years: 600, yearLabel: '600 Năm',
+                icon: 'fa-solid fa-network-wired', color: 'text-red-400', border: 'border-red-500/40',
+                desc: 'Lưới đánh cá bị đứt hoặc bỏ rơi dưới sông biển tiếp tục trở thành cái bẫy tử thần tự động trong nhiều thế kỷ, làm chết ngạt rùa biển, cá heo và phá hủy hệ sinh thái đáy nước.',
+                impact: 'Tác hại chính: Bẫy tử thần vĩnh viễn giết chết các loài thủy sinh lớn.'
+            },
+            {
+                id: 'plastic-bottle', name: 'Chai nhựa PET', years: 450, yearLabel: '450 Năm',
+                icon: 'fa-solid fa-bottle-water', color: 'text-amber-400', border: 'border-amber-500/40',
+                desc: 'Chai nước nhựa trôi theo kênh rạch ra biển, dưới ánh nắng và sóng nước sẽ vỡ vụn thành hàng tỷ hạt vi nhựa. Cá tôm ăn phải vi nhựa và đi thẳng vào bữa ăn của con người.',
+                impact: 'Tác hại chính: Tạo nguồn vi nhựa độc hại tích tụ trong chuỗi thức ăn.'
+            },
+            {
+                id: 'plastic-bag', name: 'Túi nilon sinh hoạt', years: 500, yearLabel: '500 Năm',
+                icon: 'fa-solid fa-bag-shopping', color: 'text-pink-400', border: 'border-pink-500/40',
+                desc: 'Túi nilon vừa gây bít tắc cống thoát nước đô thị gây ngập úng, vừa trôi lờ đờ trong nước giống hệt con sứa khiến rùa biển và cá nuốt phải gây tắc ruột tử vong.',
+                impact: 'Tác hại chính: Gây nghẽn dòng chảy kênh rạch và làm tắc ruột sinh vật nước.'
+            },
+            {
+                id: 'straw', name: 'Ống hút nhựa', years: 200, yearLabel: '200 Năm',
+                icon: 'fa-solid fa-slash', color: 'text-yellow-400', border: 'border-yellow-500/40',
+                desc: 'Ống hút nhỏ, nhẹ và sắc nhọn, không thể tái chế. Khi trôi nổi trên mặt nước, chúng dễ dàng đâm vào mũi hoặc cổ họng của rùa biển và chim nước.',
+                impact: 'Tác hại chính: Gây chấn thương cơ học đường hô hấp cho động vật hoang dã.'
+            },
+            {
+                id: 'cigarette', name: 'Đầu lọc thuốc lá', years: 12, yearLabel: '10 - 12 Năm',
+                icon: 'fa-solid fa-smoking', color: 'text-orange-400', border: 'border-orange-500/40',
+                desc: 'Làm từ sợi nhựa cellulose acetate ngấm đầy nicotine, kim loại nặng và thuốc trừ sâu. Chỉ 1 đầu lọc thuốc lá vứt xuống cống có thể làm nhiễm độc 500 lít nước.',
+                impact: 'Tác hại chính: Rò rỉ hóa chất cực độc giết chết ấu trùng tôm cá.'
+            },
+            {
+                id: 'styrofoam', name: 'Hộp xốp Styrofoam', years: 500, yearLabel: '500+ Năm',
+                icon: 'fa-solid fa-box-open', color: 'text-cyan-400', border: 'border-cyan-500/40',
+                desc: 'Hộp xốp đựng thức ăn rất dễ vỡ thành hàng ngàn hạt xốp tròn li ti nổi kín mặt kênh rạch, ngăn cản ánh sáng mặt trời và không cho Oxy hòa tan vào nước.',
+                impact: 'Tác hại chính: Bóp nghẹt lượng Oxy trong nước và mang theo chất độc Styrene.'
+            }
+        ];
+
+        function initLifecycle() {
+            const container = document.getElementById('lifecycle-container');
+            container.innerHTML = '';
+            trashLifecycleData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl bg-eco-deep/90 border-2 ${item.border} hover:scale-105 cursor-pointer transition-all text-center group flex flex-col justify-between items-center shadow-lg`;
+                card.onclick = () => selectTrashDetail(item);
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-2xl ${item.color} mb-3">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-extrabold text-white mb-1">${item.name}</div>
+                        <div class="text-[11px] font-extrabold ${item.color} bg-black/30 px-2.5 py-0.5 rounded-full inline-block">${item.yearLabel}</div>
+                    </div>
+                    <div class="mt-3 text-[10px] text-lime-300 font-bold">Xem tác hại <i class="fa-solid fa-chevron-right text-[8px]"></i></div>
+                `;
+                container.appendChild(card);
+            });
+            selectTrashDetail(trashLifecycleData[1]);
+        }
+
+        function selectTrashDetail(item) {
+            document.getElementById('detail-title').innerText = item.name;
+            document.getElementById('detail-years').innerText = `Thời gian phân hủy: ${item.yearLabel}`;
+            document.getElementById('detail-desc').innerText = item.desc;
+            document.getElementById('detail-impact').innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> ${item.impact}`;
+            const iconBox = document.getElementById('detail-icon');
+            iconBox.innerHTML = `<i class="${item.icon}"></i>`;
+            iconBox.className = `w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center text-5xl ${item.color} flex-shrink-0`;
+        }
+        initLifecycle();
+
+        // 3. LEAFLET MAP (ESRI + CARTO TILE MIỄN PHÍ 100%)
+        let map, markersGroup, streetLayer, satelliteLayer, isSatellite = false;
+       window.hotspotLocations = [
+            { 
+                id: 1, 
+                name: 'Rạch Lăng (Đoạn qua Phạm Văn Đồng)', 
+                city: 'Quận Bình Thạnh, TP.HCM', 
+                coords: [10.8171, 106.6995], 
+                level: 'critical', levelName: 'Nghiêm trọng', 
+                trashType: 'Hộp xốp, túi nilon, nệm cũ, lục bình', 
+                notes: 'Điểm nóng thường xuyên ứ đọng rác sinh hoạt dạt vào bờ cỏ ven rạch.', 
+                volunteersNeeded: 25 
+            },
+            { 
+                id: 2, 
+                name: 'Kênh Hy Vọng (Đoạn Phan Huy Ích)', 
+                city: 'Quận Tân Bình, TP.HCM', 
+                coords: [10.8358, 106.6360], 
+                level: 'warning', levelName: 'Cảnh báo', 
+                trashType: 'Rác thải nhựa sinh hoạt trôi sau mưa', 
+                notes: 'Cần duy trì vớt rác định kỳ để tránh nghẽn dòng thoát nước khu vực sân bay.', 
+                volunteersNeeded: 15 
+            },
+            { 
+                id: 3, 
+                name: 'Kênh Đôi (Đoạn Cầu Chữ Y)', 
+                city: 'Quận 8, TP.HCM', 
+                coords: [10.7445, 106.6785], 
+                level: 'critical', levelName: 'Nghiêm trọng', 
+                trashType: 'Túi nilon, thùng xốp, chai nhựa', 
+                notes: 'Lượng rác sinh hoạt từ các nhà ven kênh ứ đọng nhiều khi thủy triều rút.', 
+                volunteersNeeded: 30 
+            },
+            { 
+                id: 4, 
+                name: 'Kênh Nhiêu Lộc - Thị Nghè (Cầu Bông)', 
+                city: 'Quận Bình Thạnh, TP.HCM', 
+                coords: [10.7938, 106.6965], 
+                level: 'cleaned', levelName: 'Đã giải cứu xanh', 
+                trashType: 'Rác lá cây và chai nhựa lẻ tẻ', 
+                notes: 'Dòng kênh đã hồi sinh xanh mát, có đội xuồng vớt rác làm việc mỗi ngày.', 
+                volunteersNeeded: 0 
+            },
+            { 
+                id: 5, 
+                name: 'Sông Vàm Thuật (Ngã ba sông Sài Gòn)', 
+                city: 'Quận 12 - Gò Vấp, TP.HCM', 
+                coords: [10.8522, 106.6955], 
+                level: 'warning', levelName: 'Cảnh báo', 
+                trashType: 'Lục bình vướng bọc nilon và chai lọ dạt bờ', 
+                notes: 'Cần lội bùn ven bờ và lắp thêm phao chắn rác trước khi rác trôi ra sông lớn.', 
+                volunteersNeeded: 18 
+            },
+            { 
+                id: 6, 
+                name: 'Hồ Đá (Khu Đô Thị ĐHQG)', 
+                city: 'TP. Thủ Đức, TP.HCM', 
+                coords: [10.8775, 106.7985], 
+                level: 'cleaned', levelName: 'Đã giải cứu xanh', 
+                trashType: 'Chai nước suối, ly nhựa dạt ven hồ', 
+                notes: 'Hoạt động nhặt rác ven bờ hồ thường xuyên được sinh viên ĐHQG tổ chức.', 
+                volunteersNeeded: 10 
+            }
+        ];
+
+        const cityCoordinates = {
+            'Quận Bình Thạnh, TP.HCM': [10.8105, 106.7091],
+            'Quận Gò Vấp, TP.HCM': [10.8387, 106.6653],
+            'Quận 8, TP.HCM': [10.7400, 106.6430],
+            'Quận Tân Bình, TP.HCM': [10.8014, 106.6525],
+            'TP. Thủ Đức, TP.HCM': [10.8494, 106.7537],
+            'Huyện Cần Giờ, TP.HCM': [10.4114, 106.9547]
+        };
+
+        function initMap() {
+    // 1. Tạo bản đồ với tâm đặt tại TP.HCM
+    map = L.map('hotspot-map', { 
+        scrollWheelZoom: true 
+    }).setView([10.8122, 106.7020], 12);
+
+    // 2. Dùng tile gốc của OpenStreetMap (KHÔNG CẦN BẤT KỲ API KEY NÀO)
+    streetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Tiles &copy; Esri'
+}).addTo(map);
+
+    // 3. Tile vệ tinh Esri miễn phí (cũng không cần key)
+    satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+     maxZoom: 17,  
+     attribution: 'Tiles &copy; Esri'
+    });
+
+    markersGroup = L.layerGroup().addTo(map);
+
+    // 4. Bấm trực tiếp lên bản đồ để mở Modal ghim điểm rác
+    map.on('click', function(e) {
+        if (typeof openReportModal === 'function') {
+            openReportModal(e.latlng.lat, e.latlng.lng);
+        }
+    });
+
+    // 5. CỰC KỲ QUAN TRỌNG: Ép Leaflet render lại kích thước sau 300ms
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 300);
+
+    // Vẽ các điểm nóng lên bản đồ
+    if (typeof window.renderHotspots === 'function') {
+        window.renderHotspots();
+    }
+}
+
+window.switchMapLayer = function() {
+    const label = document.getElementById('map-style-label');
+    if (!isSatellite) {
+        map.removeLayer(streetLayer);
+        satelliteLayer.addTo(map);
+        label.innerText = 'Đổi nền Đường Phố';
+        isSatellite = true;
+    } else {
+        map.removeLayer(satelliteLayer);
+        streetLayer.addTo(map);
+        label.innerText = 'Đổi nền Vệ Tinh';
+        isSatellite = false;
+    }
+};
+
+window.renderHotspots = function() {
+    markersGroup.clearLayers();
+    const listEl = document.getElementById('hotspot-list');
+    listEl.innerHTML = '';
+    document.getElementById('hotspot-count').innerText = window.hotspotLocations.length;
+
+    window.hotspotLocations.forEach(spot => {
+        const colorMap = {
+            critical: { hex: '#ef4444', badge: 'bg-red-500/20 text-red-300 border-red-500/40' },
+            warning: { hex: '#f59e0b', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
+            cleaned: { hex: '#10b981', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' }
+        }[spot.level] || { hex: '#ef4444', badge: 'bg-red-500/20 text-red-300 border-red-500/40' };
+
+        const marker = L.circleMarker(spot.coords, {
+            radius: 10,
+            fillColor: colorMap.hex,
+            color: '#ffffff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(markersGroup);
+
+        marker.bindPopup(`
+            <div class="p-1 text-xs space-y-1">
+                <div class="font-extrabold text-sm text-emerald-300">${escapeHTML(spot.name)}</div>
+                <div class="text-slate-300"><strong>Khu vực:</strong> ${escapeHTML(spot.city)}</div>
+                <div class="text-amber-300"><strong>Loại rác:</strong> ${escapeHTML(spot.trashType || 'Rác sinh hoạt')}</div>
+                <div class="text-slate-200 italic">"${escapeHTML(spot.notes)}"</div>
+            </div>
+        `);
+
+        const item = document.createElement('div');
+        item.className = 'p-3.5 rounded-2xl bg-slate-900/80 border border-emerald-500/20 hover:border-lime-400 cursor-pointer transition-all';
+        item.onclick = () => {
+            map.flyTo(spot.coords, 14, { duration: 1.2 });
+            marker.openPopup();
+        };
+        item.innerHTML = `
+            <div class="flex items-start justify-between gap-2 mb-1">
+                <h5 class="font-bold text-white text-xs leading-snug">${escapeHTML(spot.name)}</h5>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${colorMap.badge}">${escapeHTML(spot.levelName)}</span>
+            </div>
+            <p class="text-[11px] text-slate-300 line-clamp-2 mb-1.5">${escapeHTML(spot.notes)}</p>
+            <div class="flex items-center justify-between text-[10px] text-lime-400 font-semibold">
+                <span><i class="fa-solid fa-location-dot mr-1"></i>${escapeHTML(spot.city)}</span>
+                <span>Xem trên bản đồ →</span>
+            </div>
+        `;
+        listEl.appendChild(item);
+    });
+};
+
+initMap();
+
+        // Modal Báo cáo & Tình nguyện viên
+        window.openReportModal = function(lat = '', lng = '') {
+            document.getElementById('report-lat').value = lat;
+            document.getElementById('report-lng').value = lng;
+            const modal = document.getElementById('report-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+        window.closeReportModal = function() {
+            const modal = document.getElementById('report-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+        window.openVolunteerModal = function(campaignName) {
+            document.getElementById('volunteer-target-campaign').innerText = campaignName;
+            const modal = document.getElementById('volunteer-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+        window.closeVolunteerModal = function() {
+            const modal = document.getElementById('volunteer-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        // 4. MINI-GAME NÂNG CẤP: CHIẾN BINH SÀI GÒN XANH VƯỢT KÊNH VỚT RÁC
+        const gameCanvas = document.getElementById('game-canvas');
+        const gCtx = gameCanvas.getContext('2d');
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function playBeep(freq = 520, duration = 0.08, type = 'sine') {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.value = 0.08;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        document.getElementById('sound-toggle-btn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon').className = soundEnabled ? 'fa-solid fa-volume-high text-emerald-400' : 'fa-solid fa-volume-xmark text-slate-400';
+        });
+
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            gameCanvas.width = wrapper.clientWidth;
+            gameCanvas.height = wrapper.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let gameActive = false, gScore = 0, gCombo = 1, gTime = 45, gLives = 3;
+        let gItems = [], waveOffset = 0, spawnTimer = null, countdownTimer = null;
+        let magnetTimer = 0, shieldTimer = 0, boostTimer = 0;
+
+        const playerBoat = { x: 200, y: 340, r: 26, speed: 6 };
+        const gKeys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
+
+        window.addEventListener('keydown', e => {
+            if (gKeys.hasOwnProperty(e.key)) gKeys[e.key] = true;
+            if (e.code === 'Space' && gameActive) { e.preventDefault(); activateBoost(); }
+        });
+        window.addEventListener('keyup', e => { if (gKeys.hasOwnProperty(e.key)) gKeys[e.key] = false; });
+
+        // Điều khiển chuột & chạm
+        gameCanvas.addEventListener('mousemove', e => {
+            if (!gameActive) return;
+            const rect = gameCanvas.getBoundingClientRect();
+            playerBoat.x = e.clientX - rect.left;
+            playerBoat.y = e.clientY - rect.top;
+        });
+        gameCanvas.addEventListener('touchmove', e => {
+            if (!gameActive) return;
+            e.preventDefault();
+            const rect = gameCanvas.getBoundingClientRect();
+            playerBoat.x = e.touches[0].clientX - rect.left;
+            playerBoat.y = e.touches[0].clientY - rect.top;
+        }, { passive: false });
+
+        // Nút bấm Mobile
+        const bindMobDir = (id, key) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('touchstart', e => { e.preventDefault(); gKeys[key] = true; }, { passive: false });
+            el.addEventListener('touchend', e => { e.preventDefault(); gKeys[key] = false; });
+        };
+        bindMobDir('mob-left', 'ArrowLeft');
+        bindMobDir('mob-right', 'ArrowRight');
+        bindMobDir('mob-up', 'ArrowUp');
+        bindMobDir('mob-down', 'ArrowDown');
+
+        window.activateBoost = function() {
+            if (!gameActive || boostTimer > 0) return;
+            boostTimer = 150;
+            playBeep(740, 0.12, 'triangle');
+            window.showToast('Tăng Tốc Xuồng!', 'Tốc độ di chuyển tăng gấp đôi trong 2.5 giây');
+        };
+
+        function spawnGameObject() {
+            if (!gameActive) return;
+            const rand = Math.random();
+            let item;
+            if (rand < 0.65) {
+                const trashTypes = [
+                    { emoji: '🍾', pts: 10 },
+                    { emoji: '🛍️', pts: 15 },
+                    { emoji: '📦', pts: 15 },
+                    { emoji: '🛞', pts: 25 }
+                ];
+                const t = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+                item = { kind: 'trash', emoji: t.emoji, pts: t.pts, r: 18 };
+            } else if (rand < 0.88) {
+                const hazards = ['🪨', '🪵', '🐢'];
+                item = { kind: 'hazard', emoji: hazards[Math.floor(Math.random() * hazards.length)], r: 20 };
+            } else {
+                const powers = [
+                    { kind: 'magnet', emoji: '🧲' },
+                    { kind: 'shield', emoji: '🛡️' }
+                ];
+                const p = powers[Math.floor(Math.random() * powers.length)];
+                item = { kind: p.kind, emoji: p.emoji, r: 18 };
+            }
+
+            item.x = Math.random() * (gameCanvas.width - 80) + 40;
+            item.y = -30;
+            item.vy = 2.2 + Math.random() * 2.2;
+            gItems.push(item);
+        }
+
+        function updateGameHUD() {
+            document.getElementById('game-score').innerText = gScore;
+            document.getElementById('game-combo').innerText = 'x' + gCombo;
+            document.getElementById('game-time').innerText = gTime;
+            document.getElementById('game-lives').innerHTML = '<span class="text-red-500">♥</span>'.repeat(Math.max(0, gLives));
+        }
+
+        function updateGameFrame() {
+            if (!gameActive) return;
+            const spd = boostTimer > 0 ? playerBoat.speed * 1.8 : playerBoat.speed;
+            if (gKeys.ArrowLeft) playerBoat.x -= spd;
+            if (gKeys.ArrowRight) playerBoat.x += spd;
+            if (gKeys.ArrowUp) playerBoat.y -= spd;
+            if (gKeys.ArrowDown) playerBoat.y += spd;
+
+            playerBoat.x = Math.max(35, Math.min(gameCanvas.width - 35, playerBoat.x));
+            playerBoat.y = Math.max(40, Math.min(gameCanvas.height - 40, playerBoat.y));
+
+            if (magnetTimer > 0) magnetTimer--;
+            if (shieldTimer > 0) shieldTimer--;
+            if (boostTimer > 0) boostTimer--;
+            waveOffset = (waveOffset + 2) % 40;
+
+            for (let i = gItems.length - 1; i >= 0; i--) {
+                const it = gItems[i];
+                it.y += it.vy;
+
+                // Hút rác khi có Nam châm
+                if (magnetTimer > 0 && it.kind === 'trash') {
+                    const dx = playerBoat.x - it.x;
+                    const dy = playerBoat.y - it.y;
+                    const d = Math.hypot(dx, dy);
+                    if (d < 180) {
+                        it.x += (dx / d) * 4.5;
+                        it.y += (dy / d) * 4.5;
+                    }
+                }
+
+                const dist = Math.hypot(playerBoat.x - it.x, playerBoat.y - it.y);
+                if (dist < playerBoat.r + it.r) {
+                    if (it.kind === 'trash') {
+                        gScore += it.pts * gCombo;
+                        gCombo = Math.min(5, gCombo + 1);
+                        playBeep(620, 0.06, 'sine');
+                    } else if (it.kind === 'magnet') {
+                        magnetTimer = 300;
+                        playBeep(880, 0.12, 'triangle');
+                        window.showToast('Nam Châm Hút Rác 🧲', 'Tự động hút rác xung quanh trong 5 giây!');
+                    } else if (it.kind === 'shield') {
+                        shieldTimer = 300;
+                        playBeep(780, 0.12, 'triangle');
+                        window.showToast('Khiên Bảo Vệ 🛡️', 'Miễn nhiễm va chạm đá ngầm trong 5 giây!');
+                    } else if (it.kind === 'hazard') {
+                        if (shieldTimer > 0) {
+                            shieldTimer = 0;
+                        } else {
+                            gLives--;
+                            gCombo = 1;
+                            playBeep(190, 0.15, 'sawtooth');
+                            if (gLives <= 0) {
+                                endGame();
+                                return;
+                            }
+                        }
+                    }
+                    updateGameHUD();
+                    gItems.splice(i, 1);
+                    continue;
+                }
+
+                if (it.y > gameCanvas.height + 40) {
+                    if (it.kind === 'trash') gCombo = 1;
+                    gItems.splice(i, 1);
+                }
+            }
+        }
+
+        function drawGameFrame() {
+            gCtx.fillStyle = '#042430';
+            gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+            // Hai bờ kênh xanh
+            gCtx.fillStyle = '#064e3b';
+            gCtx.fillRect(0, 0, 22, gameCanvas.height);
+            gCtx.fillRect(gameCanvas.width - 22, 0, 22, gameCanvas.height);
+
+            // Gợn nước
+            gCtx.strokeStyle = 'rgba(52, 211, 153, 0.12)';
+            gCtx.lineWidth = 2;
+            for (let y = 0; y < gameCanvas.height; y += 40) {
+                gCtx.beginPath();
+                gCtx.moveTo(35, y + waveOffset);
+                gCtx.lineTo(gameCanvas.width - 35, y + waveOffset + 12);
+                gCtx.stroke();
+            }
+
+            // Vẽ thực thể
+            gCtx.font = '26px Arial';
+            gCtx.textAlign = 'center';
+            gCtx.textBaseline = 'middle';
+            gItems.forEach(it => gCtx.fillText(it.emoji, it.x, it.y));
+
+            // Vòng sáng Khiên hoặc Nam châm
+            if (shieldTimer > 0 || magnetTimer > 0) {
+                gCtx.beginPath();
+                gCtx.arc(playerBoat.x, playerBoat.y, playerBoat.r + 10, 0, Math.PI * 2);
+                gCtx.strokeStyle = shieldTimer > 0 ? '#38bdf8' : '#facc15';
+                gCtx.lineWidth = 3;
+                gCtx.stroke();
+            }
+
+            // Vẽ xuồng cứu hộ
+            gCtx.font = '34px Arial';
+            gCtx.fillText('🚤', playerBoat.x, playerBoat.y);
+        }
+
+        function runGameLoop() {
+            if (!gameActive) return;
+            updateGameFrame();
+            drawGameFrame();
+            requestAnimationFrame(runGameLoop);
+        }
+
+        function startBoatGame() {
+            resizeCanvas();
+            gameActive = true;
+            gScore = 0; gCombo = 1; gTime = 45; gLives = 3;
+            gItems = []; magnetTimer = 0; shieldTimer = 0; boostTimer = 0;
+            playerBoat.x = gameCanvas.width / 2;
+            playerBoat.y = gameCanvas.height - 70;
+            updateGameHUD();
+            document.getElementById('game-overlay').classList.add('hidden');
+
+            clearInterval(spawnTimer);
+            clearInterval(countdownTimer);
+            spawnTimer = setInterval(spawnGameObject, 650);
+            countdownTimer = setInterval(() => {
+                gTime--;
+                updateGameHUD();
+                if (gTime <= 0) endGame();
+            }, 1000);
+            runGameLoop();
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(spawnTimer);
+            clearInterval(countdownTimer);
+            document.getElementById('game-overlay').classList.remove('hidden');
+            document.getElementById('overlay-title').innerText = `Hoàn Thành Đợt Ra Quân! (+${gScore} điểm)`;
+            document.getElementById('overlay-action-btn').innerText = 'Chơi Lại Lượt Mới';
+            if (gScore > 0) {
+                window.addPointsToUser(gScore, `Cộng ${gScore} điểm từ Game Vớt Rác vào Bảng Xếp Hạng!`);
+                if (typeof confetti === 'function' && gScore >= 100) {
+                    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+                }
+            }
+        }
+
+        document.getElementById('overlay-action-btn').addEventListener('click', startBoatGame);
+        document.getElementById('start-game-btn').addEventListener('click', startBoatGame);
+        drawGameFrame();
+
+        // 5. BỘ 20 CÂU HỎI TƯƠNG TÁC
+        const quizQuestions = [
+            { q: "Thời gian phân hủy của một túi nilon sinh hoạt dưới nước là bao lâu?", opts: ["10 - 20 năm", "100 - 200 năm", "500 - 1000 năm", "Không bao giờ phân hủy"], ans: 2, exp: "Túi nilon làm từ màng PE rất bền, mất tới 500-1000 năm để rã thành vi nhựa." },
+            { q: "Rác thải nào được mệnh danh là 'Sát thủ vô hình' (Lưới ma) đối với sinh vật biển?", opts: ["Hộp xốp", "Ống hút nhựa", "Lưới đánh cá hỏng/bỏ đi", "Vỏ chai thủy tinh"], ans: 2, exp: "Lưới ma là các mảng lưới đánh cá bị đứt trôi dạt, liên tục bẫy chết sinh vật nước." },
+            { q: "Vi nhựa (Microplastics) là những hạt nhựa có kích thước bao nhiêu?", opts: ["Nhỏ hơn 5 cm", "Nhỏ hơn 5 mm", "Nhỏ hơn 1 mm", "Chỉ thấy dưới kính hiển vi"], ans: 1, exp: "Theo chuẩn quốc tế, vi nhựa là các mảnh nhựa có đường kính dưới 5mm." },
+            { q: "Loại rác nào thường chiếm tỷ lệ cao nhất gây nghẽn dòng chảy kênh rạch đô thị?", opts: ["Rác thải y tế", "Đồ điện tử", "Bao bì nhựa & hộp xốp sinh hoạt", "Lốp xe cũ"], ans: 2, exp: "Bao bì nhựa và hộp xốp dùng một lần trôi xuống cống sau mưa gây ứ đọng kênh rạch." },
+            { q: "Rác thải hữu cơ (thức ăn thừa) đổ nhiều xuống kênh có tốt cho cá không?", opts: ["Rất tốt, làm thức ăn cho cá", "Không, làm cạn kiệt Oxy trong nước", "Tùy loại thức ăn", "Chỉ cá lớn mới ăn được"], ans: 1, exp: "Rác hữu cơ phân hủy số lượng lớn dưới kênh sẽ tiêu thụ cạn kiệt Oxy hòa tan, làm cá chết hàng loạt." },
+            { q: "Khoảng 80% rác thải nhựa ở đại dương bắt nguồn từ đâu?", opts: ["Từ các tàu du lịch", "Từ các giàn khoan", "Từ các dòng sông, kênh rạch và đất liền", "Từ không gian"], ans: 2, exp: "80% rác biển bị cuốn trôi từ đất liền thông qua cống thoát nước và kênh rạch sông ngòi." },
+            { q: "Rùa biển thường ăn nhầm túi nilon vì tưởng chúng là con gì?", opts: ["Cá heo", "Sứa biển", "Bạch tuộc", "San hô"], ans: 1, exp: "Túi nilon trôi nổi lờ đờ trong nước nhìn rất giống sứa biển - món ăn khoái khẩu của rùa." },
+            { q: "Chỉ 1 đầu lọc thuốc lá vứt xuống cống có thể làm ô nhiễm bao nhiêu lít nước?", opts: ["5 lít", "50 lít", "500 lít", "Không gây ô nhiễm"], ans: 2, exp: "Đầu lọc chứa nhựa Cellulose Acetate và hàng ngàn chất độc có thể làm nhiễm độc 500 lít nước." },
+            { q: "Chai nhựa PET (chai nước ngọt, nước suối) cần bao lâu để phân hủy?", opts: ["50 năm", "100 năm", "450 năm", "900 năm"], ans: 2, exp: "Chai PET cần khoảng 450 năm để rã thành các hạt vi nhựa dưới tác động tự nhiên." },
+            { q: "Đảo rác Thái Bình Dương (Great Pacific Garbage Patch) có diện tích lớn cỡ nào?", opts: ["Bằng diện tích TP.HCM", "Bằng diện tích Việt Nam", "Gấp 3 lần nước Pháp", "Bằng một sân bóng"], ans: 2, exp: "Nó là vòng xoáy rác khổng lồ rộng khoảng 1.6 triệu km², gấp 3 lần diện tích nước Pháp." },
+            { q: "Giải pháp nào bền vững nhất để giảm rác thải dưới kênh rạch?", opts: ["Chỉ mua thêm tàu vớt rác", "Lấp hết kênh rạch", "Giảm nhựa dùng 1 lần & phân loại rác tại nguồn", "Thả thêm cá"], ans: 2, exp: "Ngăn rác từ nguồn và thay đổi thói quen dùng nhựa 1 lần là giải pháp gốc rễ nhất." },
+            { q: "Quá trình trao đổi Oxy mặt nước ở kênh rạch bị cản trở nặng nhất bởi?", opts: ["Sỏi đá dưới đáy", "Lục bình dày đặc và hộp xốp nổi kín mặt nước", "Cá bơi lội", "Ánh nắng"], ans: 1, exp: "Mảng rác xốp và lục bình phủ kín mặt nước ngăn ánh sáng và cản Oxy hòa tan vào nước." },
+            { q: "Đâu KHÔNG phải là tác hại của hạt vi nhựa trong nguồn nước?", opts: ["Tích tụ trong hải sản", "Giúp lọc nước trong sạch hơn", "Làm rối loạn nội tiết sinh vật", "Đi vào cơ thể người qua chuỗi thức ăn"], ans: 1, exp: "Vi nhựa hấp thụ độc tố hóa học và truyền vào chuỗi thức ăn chứ không hề làm sạch nước." },
+            { q: "Đốt rác thải nhựa tự phát ven kênh rạch sẽ sinh ra khí cực độc nào?", opts: ["Oxy (O2)", "Dioxin và Furan", "Khí Heli", "Hơi nước"], ans: 1, exp: "Đốt nhựa hở sinh ra Dioxin và Furan gây ung thư và tổn thương hệ thần kinh." },
+            { q: "Ống hút nhựa gây nguy hiểm thế nào cho động vật thủy sinh?", opts: ["Làm gãy răng cá", "Dễ đâm vào mũi và đường thở của rùa, chim nước", "Làm nước mặn hơn", "Không nguy hiểm"], ans: 1, exp: "Ống hút nhỏ, cứng và nhọn dễ mắc kẹt trong mũi rùa biển hoặc cổ họng chim săn cá." },
+            { q: "Nhóm tình nguyện nổi tiếng tại TP.HCM chuyên lội kênh đen vớt rác tên là gì?", opts: ["Biển Xanh", "Sài Gòn Xanh", "Rừng Vàng", "Gió Mới"], ans: 1, exp: "Nhóm Sài Gòn Xanh đã truyền cảm hứng mạnh mẽ với hơn 300 chiến dịch lội kênh dọn rác tại TP.HCM." },
+            { q: "Biểu tượng tam giác mũi tên ♻️ có số từ 1 đến 7 trên đáy chai nhựa có ý nghĩa gì?", opts: ["Số lần đã tái chế", "Mã phân loại chất liệu nhựa polymer", "Nhựa tự hủy sinh học", "Số năm sử dụng"], ans: 1, exp: "Con số 1-7 chỉ loại nhựa (PET, HDPE, PVC...). Trong đó số 3, 6, 7 rất khó tái chế." },
+            { q: "Vật dụng nào thân thiện nhất để thay thế ly nhựa dùng 1 lần?", opts: ["Ly giấy tráng màng nhựa PE", "Hộp xốp", "Bình cá nhân dùng nhiều lần (Inox/Thủy tinh)", "Túi nilon"], ans: 2, exp: "Bình cá nhân tái sử dụng nhiều năm giúp triệt tiêu rác thải phát sinh." },
+            { q: "Trung bình mỗi phút có lượng rác nhựa tương đương bao nhiêu đổ ra đại dương?", opts: ["1 xe rùa", "1 xe đạp", "1 chiếc xe tải chở rác", "10 tàu sân bay"], ans: 2, exp: "Theo báo cáo của Liên Hợp Quốc, mỗi phút có tương đương 1 xe tải rác nhựa đổ ra biển." },
+            { q: "Công nghệ 'Trash Boom' mà nhóm tình nguyện lắp trên kênh rạch là gì?", opts: ["Thuốc nổ phá rác", "Hệ thống phao chắn nổi gom rác theo dòng chảy", "Lưới bắt cá", "Máy bơm cát"], ans: 1, exp: "Trash Boom là phao chắn rác nổi giăng chéo kênh, chặn rác trôi ra sông lớn và gom về bờ để dễ vớt." }
+        ];
+
+        let qIdx = 0, qCorrect = 0, qPts = 0;
+
+        function renderQuizQuestion() {
+            if (qIdx >= quizQuestions.length) {
+                document.getElementById('quiz-question-text').innerHTML = `🎉 Xuất sắc! Bạn đã hoàn thành 20/20 câu hỏi với <strong>${qCorrect} câu đúng</strong> (+${qPts} điểm).`;
+                document.getElementById('quiz-options-grid').innerHTML = '';
+                document.getElementById('quiz-next-btn').classList.add('hidden');
+                if (typeof confetti === 'function') confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+                return;
+            }
+            const item = quizQuestions[qIdx];
+            document.getElementById('quiz-current-idx').innerText = qIdx + 1;
+            document.getElementById('quiz-progress-bar').style.width = `${((qIdx + 1) / quizQuestions.length) * 100}%`;
+            document.getElementById('quiz-question-text').innerText = item.q;
+            document.getElementById('quiz-explanation-box').classList.add('hidden');
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+
+            const grid = document.getElementById('quiz-options-grid');
+            grid.innerHTML = '';
+            item.opts.forEach((optText, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-opt-btn p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/30 hover:border-lime-400 text-left text-xs sm:text-sm font-semibold text-slate-100 transition-all';
+                btn.innerText = `${String.fromCharCode(65 + i)}. ${optText}`;
+                btn.onclick = () => selectQuizAnswer(i, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectQuizAnswer(selectedIdx, btnEl) {
+            const item = quizQuestions[qIdx];
+            const allBtns = document.querySelectorAll('.quiz-opt-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selectedIdx === item.ans) {
+                btnEl.classList.add('correct');
+                qCorrect++;
+                qPts += 50;
+                document.getElementById('quiz-correct-count').innerText = qCorrect;
+                document.getElementById('quiz-points').innerText = qPts;
+                window.addPointsToUser(50, 'Trả lời đúng câu hỏi Quiz (+50đ)');
+            } else {
+                btnEl.classList.add('wrong');
+                allBtns[item.ans].classList.add('correct');
+            }
+
+            const expBox = document.getElementById('quiz-explanation-box');
+            expBox.innerHTML = `<strong class="text-lime-400"><i class="fa-solid fa-lightbulb mr-1"></i>Giải thích:</strong> ${escapeHTML(item.exp)}`;
+            expBox.classList.remove('hidden');
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        window.nextQuizQuestion = function() {
+            qIdx++;
+            renderQuizQuestion();
+        };
+
+        window.resetQuiz = function() {
+            qIdx = 0; qCorrect = 0; qPts = 0;
+            document.getElementById('quiz-correct-count').innerText = 0;
+            document.getElementById('quiz-points').innerText = 0;
+            renderQuizQuestion();
+        };
+        renderQuizQuestion();
+
+        // 6. THỬ THÁCH 7 NGÀY SỐNG XANH
+        const sevenDaysTasks = [
+            "Ngày 1: Từ chối ống hút nhựa và mang theo bình nước cá nhân khi ra ngoài.",
+            "Ngày 2: Không vứt tàn thuốc, vỏ kẹo hay rác nhỏ xuống miệng cống thoát nước.",
+            "Ngày 3: Mang túi vải hoặc hộp đựng khi đi chợ, siêu thị thay cho túi nilon.",
+            "Ngày 4: Phân loại rác nhựa tái chế (chai PET, lon nhôm) riêng khỏi rác hữu cơ.",
+            "Ngày 5: Hạn chế đặt đồ ăn giao tận nơi sử dụng hộp xốp Styrofoam dùng 1 lần.",
+            "Ngày 6: Ghim báo cáo ít nhất 1 điểm rác kênh rạch hoặc chia sẻ kiến thức bảo vệ nước.",
+            "Ngày 7: Dành 30 phút cuối tuần dọn vệ sinh khu phố hoặc đăng ký chiến dịch Sài Gòn Xanh."
+        ];
+
+        let checkedDays = JSON.parse(localStorage.getItem('aquagreen_7days') || '[false,false,false,false,false,false,false]');
+        let challengeRewardClaimed = localStorage.getItem('aquagreen_7days_rewarded') === 'true';
+
+        function renderSevenDays() {
+            const listEl = document.getElementById('challenge-list');
+            listEl.innerHTML = '';
+            let doneCount = 0;
+
+            sevenDaysTasks.forEach((task, i) => {
+                if (checkedDays[i]) doneCount++;
+                const row = document.createElement('label');
+                row.className = `flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${checkedDays[i] ? 'bg-emerald-950/80 border-lime-400/60 text-lime-200 line-through opacity-85' : 'bg-slate-900/80 border-emerald-500/20 text-slate-200 hover:border-emerald-400'}`;
+                row.innerHTML = `
+                    <input type="checkbox" ${checkedDays[i] ? 'checked' : ''} class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                    <span class="text-xs sm:text-sm font-medium flex-1">${escapeHTML(task)}</span>
+                `;
+                row.querySelector('input').addEventListener('change', (e) => {
+                    checkedDays[i] = e.target.checked;
+                    localStorage.setItem('aquagreen_7days', JSON.stringify(checkedDays));
+                    renderSevenDays();
+                });
+                listEl.appendChild(row);
+            });
+
+            document.getElementById('challenge-progress-text').innerText = `${doneCount}/7`;
+            document.getElementById('challenge-progress-bar').style.width = `${(doneCount / 7) * 100}%`;
+
+            if (doneCount === 7 && !challengeRewardClaimed) {
+                challengeRewardClaimed = true;
+                localStorage.setItem('aquagreen_7days_rewarded', 'true');
+                window.addPointsToUser(200, 'Hoàn thành xuất sắc Thử thách 7 Ngày Cứu Dòng Nước!');
+                if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+            }
+        }
+
+        window.resetChallenge = function() {
+            checkedDays = [false, false, false, false, false, false, false];
+            localStorage.setItem('aquagreen_7days', JSON.stringify(checkedDays));
+            renderSevenDays();
+        };
+        renderSevenDays();
+    </script>
+
+    <!-- ================= 2. MODULE DATABASE (FIREBASE + LOCAL FALLBACK) ================= -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+        import { 
+            getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, increment, query, orderBy, limit, serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_-J0RenQ8uQmtl2VZQQZsWcHLtCEAXxU",
+            authDomain: "aquagreen-2a882.firebaseapp.com",
+            projectId: "aquagreen-2a882",
+            storageBucket: "aquagreen-2a882.firebasestorage.app",
+            messagingSenderId: "680484062750",
+            appId: "1:680484062750:web:8b4f056a64286dc0f3d00f",
+            measurementId: "G-T94F5RB2RH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        let analytics = null;
+        try {
+            isSupported().then(supported => {
+                if (supported) analytics = getAnalytics(app);
+            }).catch(() => {});
+        } catch (e) {}
+
+        const isCloud = true;
+        let db = null;
+        try {
+            db = getFirestore(app);
+            const badgeEl = document.getElementById('db-mode-badge');
+            if (badgeEl) badgeEl.innerText = "☁️ Cloud Live";
+        } catch (e) {
+            console.warn("Lỗi khởi tạo Cloud Firestore:", e);
+        }
+
+        // 1. ĐẾM SỐ LƯỢNG NGƯỜI TRUY CẬP WEB (Cloud Firestore + Local fallback)
+        async function updateVisitorCount() {
+            let views = 1280;
+            const sessionKey = 'aquagreen_visitor_counted_session';
+            let isCounted = false;
+            try {
+                isCounted = sessionStorage.getItem(sessionKey) === '1';
+            } catch (e) {}
+
+            if (db) {
+                try {
+                    const statsRef = doc(db, "site_stats", "visitors");
+                    if (!isCounted) {
+                        await setDoc(statsRef, { count: increment(1), lastVisit: serverTimestamp() }, { merge: true });
+                        try { sessionStorage.setItem(sessionKey, '1'); } catch (e) {}
+                    }
+                    const snap = await getDoc(statsRef);
+                    if (snap.exists() && typeof snap.data().count === 'number') {
+                        const countVal = snap.data().count;
+                        views = countVal < 1280 ? 1280 + countVal : countVal;
+                    }
+                } catch (e) {
+                    console.warn("Firestore site_stats error, using localStorage fallback:", e);
+                    views = parseInt(localStorage.getItem('aquagreen_views') || '1280') + (isCounted ? 0 : 1);
+                    localStorage.setItem('aquagreen_views', views);
+                }
+            } else {
+                views = parseInt(localStorage.getItem('aquagreen_views') || '1280') + (isCounted ? 0 : 1);
+                localStorage.setItem('aquagreen_views', views);
+            }
+
+            const formatted = views.toLocaleString('vi-VN');
+            const hEl = document.getElementById('header-visitor-count');
+            const mEl = document.getElementById('mobile-visitor-count');
+            const fEl = document.getElementById('footer-visitor-count');
+            if (hEl) hEl.innerText = formatted;
+            if (mEl) mEl.innerText = formatted;
+            if (fEl) fEl.innerText = formatted;
+        }
+
+        // 2. BẢNG XẾP HẠNG (LEADERBOARD)
+        const defaultBoard = [
+            { name: "Biệt Đội Sài Gòn Xanh", score: 1450 },
+            { name: "Minh Quân (IUH)", score: 980 },
+            { name: "Lê Thảo Vy", score: 820 },
+            { name: "Hoàng Nam", score: 640 },
+            { name: "CLB Môi Trường Trẻ", score: 510 }
+        ];
+
+        async function loadLeaderboard() {
+            let board = [];
+            if (db) {
+                try {
+                    const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(8));
+                    const snap = await getDocs(q);
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (data && data.name) {
+                            board.push({
+                                name: String(data.name),
+                                score: Number(data.score) || 0
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Lỗi loadLeaderboard từ Firestore:", e);
+                }
+            }
+
+            // Nếu Firestore chưa có dữ liệu hoặc lỗi kết nối, nạp bảng mặc định hoặc local
+            if (board.length === 0) {
+                try {
+                    board = JSON.parse(localStorage.getItem('aquagreen_leaderboard')) || [...defaultBoard];
+                } catch (e) {
+                    board = [...defaultBoard];
+                }
+            }
+
+            // Nhận diện người chơi hiện tại
+            const currentName = (window.userName || localStorage.getItem('aquagreen_user_name') || 'Chiến Binh Xanh').trim();
+            const currentScore = Number(window.userTotalPoints) || 0;
+
+            let foundMe = false;
+            board.forEach(item => {
+                if (item.name === currentName) {
+                    item.isMe = true;
+                    foundMe = true;
+                    if (currentScore > item.score) {
+                        item.score = currentScore;
+                    }
+                } else {
+                    item.isMe = false;
+                }
+            });
+
+            // Nếu người chơi có điểm và chưa có trong top hiển thị, chèn vào danh sách
+            if (!foundMe && currentScore > 0) {
+                board.push({ name: currentName, score: currentScore, isMe: true });
+            }
+
+            board.sort((a, b) => b.score - a.score);
+            board = board.slice(0, 8);
+
+            const container = document.getElementById('leaderboard-list');
+            if (container) {
+                container.innerHTML = board.map((item, idx) => {
+                    const rankBadge = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+                    return `
+                        <div class="flex items-center justify-between p-3 rounded-2xl ${item.isMe ? 'bg-emerald-900/60 border border-lime-400' : 'bg-slate-900/80 border border-white/5'} text-xs">
+                            <div class="flex items-center gap-2.5 font-bold text-white">
+                                <span class="w-6 text-center text-sm">${rankBadge}</span>
+                                <span>${escapeHTML(item.name)}</span>
+                                ${item.isMe ? '<span class="text-[10px] text-lime-400 font-semibold">(Bạn)</span>' : ''}
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-extrabold font-mono">${Number(item.score)} đ</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        window.syncUserScoreToBoard = async function(name, totalScore) {
+            const cleanName = (name || window.userName || 'Chiến Binh Xanh').trim();
+            const scoreNum = Number(totalScore) || 0;
+
+            if (db && scoreNum > 0 && cleanName) {
+                try {
+                    const docId = cleanName.replace(/[\/\\]/g, '_').substring(0, 50);
+                    await setDoc(doc(db, "leaderboard", docId), {
+                        name: cleanName,
+                        score: scoreNum,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                } catch (e) {
+                    console.warn("Lỗi sync điểm lên Firestore:", e);
+                }
+            }
+
+            // Đồng bộ LocalStorage làm cache
+            try {
+                let localBoard = JSON.parse(localStorage.getItem('aquagreen_leaderboard')) || [...defaultBoard];
+                const existingIdx = localBoard.findIndex(x => x.name === cleanName);
+                if (existingIdx >= 0) {
+                    if (scoreNum > localBoard[existingIdx].score) localBoard[existingIdx].score = scoreNum;
+                } else {
+                    localBoard.push({ name: cleanName, score: scoreNum });
+                }
+                localBoard.sort((a, b) => b.score - a.score);
+                localStorage.setItem('aquagreen_leaderboard', JSON.stringify(localBoard.slice(0, 8)));
+            } catch (e) {}
+
+            await loadLeaderboard();
+        };
+
+        window.updatePlayerName = async function() {
+            const input = document.getElementById('player-name-input');
+            const newName = input.value.trim();
+            if (!newName) {
+                window.showToast('Thiếu tên!', 'Vui lòng nhập tên của bạn trước khi bấm Lưu.');
+                return;
+            }
+            window.userName = newName;
+            localStorage.setItem('aquagreen_user_name', newName);
+            await window.syncUserScoreToBoard(newName, window.userTotalPoints);
+            window.showToast('Đã cập nhật Bảng Xếp Hạng!', `Chào mừng chiến binh ${newName} (${window.userTotalPoints} điểm)`);
+        };
+
+        // 3. BÁO CÁO & GHIM ĐIỂM RÁC TRÊN BẢN ĐỒ (Cloud Firestore + Local fallback)
+        async function loadSavedSpots() {
+            const fetchedSpots = [];
+
+            if (db) {
+                try {
+                    const snap = await getDocs(collection(db, "trash_reports"));
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (data && data.coords && Array.isArray(data.coords) && data.coords.length === 2) {
+                            const lat = parseFloat(data.coords[0]);
+                            const lng = parseFloat(data.coords[1]);
+                            if (!isNaN(lat) && !isNaN(lng)) {
+                                fetchedSpots.push({
+                                    id: data.id || d.id,
+                                    name: data.name || 'Điểm rác báo cáo',
+                                    city: data.city || 'TP.HCM',
+                                    coords: [lat, lng],
+                                    level: data.level || 'warning',
+                                    levelName: data.levelName || 'Cảnh báo',
+                                    trashType: data.trashType || 'Báo cáo trực tiếp từ người dân',
+                                    notes: data.notes || '',
+                                    volunteersNeeded: Number(data.volunteersNeeded) || 10
+                                });
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Lỗi tải trash_reports từ Firestore:", e);
+                }
+            }
+
+            // Lấy thêm từ LocalStorage
+            try {
+                const localSaved = JSON.parse(localStorage.getItem('aquagreen_custom_spots') || '[]');
+                localSaved.forEach(s => {
+                    if (s && s.coords && !fetchedSpots.some(f => f.id === s.id)) {
+                        fetchedSpots.push(s);
+                    }
+                });
+            } catch (e) {}
+
+            // Trộn vào danh sách toàn cục mà không tạo điểm trùng lặp
+            fetchedSpots.forEach(newSpot => {
+                const exists = window.hotspotLocations.some(item => item.id === newSpot.id);
+                if (!exists) {
+                    window.hotspotLocations.unshift(newSpot);
+                }
+            });
+
+            if (typeof window.renderHotspots === 'function') {
+                window.renderHotspots();
+            }
+        }
+
+        const reportFormEl = document.getElementById('report-form');
+        if (reportFormEl) {
+            reportFormEl.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('report-name').value.trim();
+                const city = document.getElementById('report-city').value;
+                const level = document.getElementById('report-level').value;
+                const notes = document.getElementById('report-notes').value.trim() || 'Điểm rác do cộng đồng báo cáo.';
+                const latInput = parseFloat(document.getElementById('report-lat').value);
+                const lngInput = parseFloat(document.getElementById('report-lng').value);
+
+                const baseCoords = (!isNaN(latInput) && !isNaN(lngInput))
+                    ? [latInput, lngInput]
+                    : [
+                        (cityCoordinates[city]?.[0] || 10.79) + (Math.random() - 0.5) * 0.015,
+                        (cityCoordinates[city]?.[1] || 106.69) + (Math.random() - 0.5) * 0.015
+                    ];
+
+                const levelNameMap = { critical: 'Nghiêm trọng', warning: 'Cảnh báo', cleaned: 'Đã giải cứu xanh' };
+                const spotId = 'spot_' + Date.now();
+                const newSpot = {
+                    id: spotId,
+                    name,
+                    city,
+                    coords: [parseFloat(baseCoords[0].toFixed(5)), parseFloat(baseCoords[1].toFixed(5))],
+                    level,
+                    levelName: levelNameMap[level] || 'Cảnh báo',
+                    trashType: 'Báo cáo trực tiếp từ người dân',
+                    notes,
+                    volunteersNeeded: 10
+                };
+
+                // Lưu lên Cloud Firestore
+                if (db) {
+                    try {
+                        await setDoc(doc(db, "trash_reports", spotId), {
+                            ...newSpot,
+                            createdAt: serverTimestamp()
+                        });
+                    } catch (err) {
+                        console.warn("Lỗi lưu điểm rác lên Firestore:", err);
+                    }
+                }
+
+                // Lưu vào LocalStorage
+                try {
+                    const saved = JSON.parse(localStorage.getItem('aquagreen_custom_spots') || '[]');
+                    saved.unshift(newSpot);
+                    localStorage.setItem('aquagreen_custom_spots', JSON.stringify(saved));
+                } catch (err) {}
+
+                // Cập nhật giao diện bản đồ ngay lập tức
+                window.hotspotLocations.unshift(newSpot);
+                if (typeof window.renderHotspots === 'function') {
+                    window.renderHotspots();
+                }
+
+                // Di chuyển camera bản đồ đến điểm vừa ghim
+                if (map && baseCoords) {
+                    map.flyTo(baseCoords, 14, { duration: 1.2 });
+                }
+
+                window.closeReportModal();
+                e.target.reset();
+                window.addPointsToUser(30, 'Cảm ơn bạn đã ghim báo cáo điểm rác mới lên bản đồ!');
+                window.showToast('Ghim thành công!', `Điểm "${name}" đã được lưu vào hệ sinh thái bản đồ.`);
+            });
+        }
+
+        // 4. ĐĂNG KÝ TÌNH NGUYỆN VIÊN (Firestore + Local fallback)
+        const volFormEl = document.getElementById('volunteer-form');
+        if (volFormEl) {
+            volFormEl.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('vol-name').value.trim();
+                const phone = document.getElementById('vol-phone').value.trim();
+                const email = document.getElementById('vol-email').value.trim();
+                const campaign = document.getElementById('volunteer-target-campaign').innerText;
+
+                if (!/^[0-9]{10}$/.test(phone)) {
+                    alert('Vui lòng nhập số điện thoại hợp lệ gồm đúng 10 chữ số!');
+                    return;
+                }
+
+                if (db) {
+                    try {
+                        await addDoc(collection(db, "volunteers"), { 
+                            name, 
+                            phone, 
+                            email, 
+                            campaign, 
+                            createdAt: serverTimestamp() 
+                        });
+                    } catch (err) { 
+                        console.warn("Lỗi lưu đăng ký tình nguyện viên lên Firestore:", err); 
+                    }
+                }
+
+                try {
+                    const list = JSON.parse(localStorage.getItem('aquagreen_volunteers') || '[]');
+                    list.push({ name, phone, email, campaign, time: new Date().toISOString() });
+                    localStorage.setItem('aquagreen_volunteers', JSON.stringify(list));
+                } catch (err) {}
+
+                window.closeVolunteerModal();
+                e.target.reset();
+                window.addPointsToUser(50, `Đăng ký tham gia ${campaign} thành công!`);
+                if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                window.showToast('Đăng ký thành công!', `Chào mừng bạn gia nhập chiến dịch ${campaign}!`);
+            });
+        }
+
+        // Khởi chạy đồng bộ dữ liệu
+        updateVisitorCount();
+        loadLeaderboard();
+        loadSavedSpots();
+    </script>
+
+    <!-- =========================================================================
+         3. TÍCH HỢP CHATBOT AI COZE (AQUAGREEN ASSISTANT)
+    ========================================================================== -->
+    <script src="https://lf-cdn.coze.com/obj/unpkg/flow-platform/chat-app-sdk/0.1.0-beta.7/libs/oversea/index.js"></script>
+    <script>
+      new CozeWebSDK.WebChatClient({
+        config: {
+          bot_id: '7699116907672862773',
+        },
+        componentProps: {
+          title: 'AquaGreen Assistant',
+        },
+      });
+    </script>
+</body>
+</html>
