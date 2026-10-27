@@ -2030,15 +2030,22 @@ initMap();
     <!-- =========================================================================
          3. TÍCH HỢP CHATBOT AI COZE (AQUAGREEN ASSISTANT)
     ========================================================================== -->
-    <script src="https://lf-cdn.coze.com/obj/unpkg/flow-platform/chat-app-sdk/0.1.0-beta.7/libs/oversea/index.js"></script>
+    <script src="https://sf-cdn.coze.com/obj/unpkg-va/flow-platform/chat-app-sdk/1.2.0-beta.6/libs/oversea/index.js"></script>
     <script>
       new CozeWebSDK.WebChatClient({
         config: {
           bot_id: '7699116907672862773',
         },
         componentProps: {
-          title: 'AquaGreen Assistant',
+          title: 'Coze',
         },
+        auth: {
+          type: 'token',
+          token: 'pat_********',
+          onRefreshToken: function () {
+            return 'pat_********'
+          }
+        }
       });
     </script>
 </body>
