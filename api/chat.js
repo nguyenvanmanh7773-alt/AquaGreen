@@ -17,14 +17,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Chưa cấu hình GEMINI_API_KEY trên Vercel' });
   }
 
-  // Danh sách model chuẩn dùng dấu gạch nối ASCII (char code 45)
+  // Danh sách model tương thích API mới nhất
   const models = [
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-1.0-pro'
+    'gemini-3.8-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash'
   ];
 
-  const systemPrompt = `Bạn là Trợ lý AI của AquaGreen Sài Gòn. Hãy giải đáp thân thiện, tích cực bằng tiếng Việt về phân loại rác và bảo vệ môi trường, kênh rạch TP.HCM. Hướng dẫn người dùng các tính năng: Báo cáo kênh ô nhiễm trên bản đồ, thi Trắc nghiệm 20 câu, và Game Pixel vớt rác. Trả lời súc tích, ngắn gọn 2-4 câu.`;
+  const systemPrompt = "Bạn là Trợ lý AI của AquaGreen Sài Gòn. Hãy giải đáp thân thiện, tích cực bằng tiếng Việt về phân loại rác và bảo vệ môi trường, kênh rạch TP.HCM. Hướng dẫn người dùng các tính năng: Báo cáo kênh ô nhiễm trên bản đồ (+50đ), thi Trắc nghiệm 20 câu, và Game Pixel vớt rác. Trả lời súc tích, ngắn gọn 2-4 câu.";
+
+  let lastErrorDetail = '';
 
   for (const model of models) {
     try {
@@ -48,14 +50,16 @@ export default async function handler(req, res) {
         return res.status(200).json({
           reply: data.candidates[0].content.parts[0].text
         });
+      } else {
+        lastErrorDetail = data?.error?.message || `Lỗi HTTP ${response.status}`;
       }
     } catch (err) {
-      // Nếu model hiện tại bận hoặc lỗi thì thử model tiếp theo
-      continue;
+      lastErrorDetail = err.message;
     }
   }
 
   return res.status(500).json({
-    error: 'Hệ thống AI đang bận xử lý, bạn vui lòng thử lại sau ít giây nhé!'
+    error: `Lỗi từ Gemini: ${lastErrorDetail}`,
+    reply: `Lỗi từ Gemini: ${lastErrorDetail}`
   });
 }
