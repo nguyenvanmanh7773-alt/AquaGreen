@@ -71,13 +71,9 @@ module.exports = async function handler(req, res) {
             }
         };
 
-        // Danh sách model sử dụng dấu gạch nối ASCII tiêu chuẩn (hyphen - charCode 45)
-        // Cơ chế Fallback: thử gemini-1.5-flash trước, nếu lỗi chuyển sang gemini-1.5-flash-latest, gemini-2.0-flash
+        // Tên model gọi Gemini chính xác theo yêu cầu: "gemini-3.8-flash"
         const candidateModels = [
-            'gemini-1.5-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-2.0-flash',
-            'gemini-2.5-flash'
+            'gemini-3.8-flash'
         ];
 
         let botReply = '';
