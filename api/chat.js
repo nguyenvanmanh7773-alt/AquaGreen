@@ -14,7 +14,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // GHÉP CHUỖI ĐỘNG ĐỂ CHỐNG LỖI KÝ TỰ (AUTO-CORRECT)
+    // Máy tính sẽ tự ghép: 'gemini' + '-' + '1.5' + '-' + 'flash'
+    const modelName = ['gemini', '1.5', 'flash'].join(String.fromCharCode(45));
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -31,7 +36,6 @@ export default async function handler(req, res) {
     if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
       return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
     } else {
-      // In thẳng mã lỗi chi tiết của Google ra để sửa nếu có
       return res.status(500).json({ error: `LỖI GOOGLE API: ${data.error?.message || 'Lỗi không xác định'}` });
     }
   } catch (err) {
