@@ -1,5 +1,5 @@
 function getSmartFallbackReply(msg) {
-  const lower = (msg || '').toLowerCase();
+  const lower = msg.toLowerCase();
   if (lower.includes('phân loại') || lower.includes('rác')) {
     return 'Rác thải được chia làm 3 loại chính: Rác hữu cơ (thức ăn thừa, lá cây - dễ phân hủy), Rác tái chế (nhựa, giấy, kim loại) và Rác vô cơ/còn lại (túi nilon bẩn, sành sứ). Phân loại đúng tại nguồn giúp giảm tải ô nhiễm cho các dòng kênh Sài Gòn! 🌿';
   }
@@ -20,75 +20,41 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  let body = req.body;
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch (e) {}
-  }
-  const { message } = body || {};
+  const { message } = req.body || {};
   if (!message) {
     return res.status(400).json({ error: 'Tin nhắn không được để trống' });
   }
 
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  const apiKey = process.env.GEMINI_API_KEY;
   const systemPrompt = "Bạn là Trợ lý AI của AquaGreen Sài Gòn. Hãy giải đáp thân thiện, tích cực bằng tiếng Việt về phân loại rác và bảo vệ môi trường, kênh rạch TP.HCM. Hướng dẫn người dùng các tính năng: Báo cáo kênh ô nhiễm trên bản đồ (+50đ), thi Trắc nghiệm 20 câu, và Game Pixel vớt rác. Trả lời súc tích, ngắn gọn 2-4 câu.";
 
   if (apiKey) {
     try {
-      // 1. Lấy danh sách model thực tế từ Google
-      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-      const listData = await listRes.json();
-
-      let candidateModels = ['models/gemini-3.8-flash', 'models/gemini-3.8-pro'];
-
-      if (listData?.models) {
-        const dynamicModels = listData.models
-          .filter(m => 
-            m.supportedGenerationMethods?.includes('generateContent') &&
-            !m.name.includes('2.5') &&
-            !m.name.includes('2.0') &&
-            !m.name.includes('1.5') &&
-            !m.name.includes('1.0')
-          )
-          .map(m => m.name);
-
-        // Ưu tiên đưa model 3.8 và flash lên đầu danh sách thử
-        dynamicModels.sort((a, b) => {
-          const aScore = (a.includes('3.8') ? 2 : 0) + (a.includes('flash') ? 1 : 0);
-          const bScore = (b.includes('3.8') ? 2 : 0) + (b.includes('flash') ? 1 : 0);
-          return bScore - aScore;
-        });
-
-        candidateModels = [...new Set([...candidateModels, ...dynamicModels])];
-      }
-
-      // 2. Thử lần lượt từng model hợp lệ cho đến khi thành công
-      for (const modelName of candidateModels) {
-        try {
-          const cleanName = modelName.startsWith('models/') ? modelName : `models/${modelName}`;
-          const chatRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${cleanName}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nNgười dùng hỏi: ${message}` }] }]
-            })
-          });
-
-          const chatData = await chatRes.json();
-          const replyText = chatData?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-          if (chatRes.ok && replyText) {
-            return res.status(200).json({ reply: replyText });
+      // Gọi thẳng trực tiếp model 3.8-flash siêu tốc
+      const chatRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nNgười dùng hỏi: ${message}` }] }],
+          generationConfig: {
+            maxOutputTokens: 250,
+            temperature: 0.7
           }
-        } catch (innerErr) {
-          continue;
-        }
+        })
+      });
+
+      const chatData = await chatRes.json();
+      const replyText = chatData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (chatRes.ok && replyText) {
+        return res.status(200).json({ reply: replyText });
       }
     } catch (err) {
-      // Chuyển sang cơ chế dự phòng bên dưới nếu mạng hoặc API lỗi
+      // Gặp lỗi thì tự rơi xuống fallback bên dưới
     }
   }
 
-  // 3. Trả lời bằng bộ kiến thức AI nội bộ nếu tất cả model Google đang bận
+  // Dự phòng phản hồi lập tức nếu mạng bận
   return res.status(200).json({
     reply: getSmartFallbackReply(message)
   });
