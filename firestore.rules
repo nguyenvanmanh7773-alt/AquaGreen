@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // 1. BẢNG XẾP HẠNG (LEADERBOARD)
+    // =========================================================================
+    match /leaderboard/{docId} {
+      // Cho phép mọi người đọc công khai để xem thứ hạng
+      allow read: if true;
+
+      // TUYỆT ĐỐI KHÔNG cho phép xóa dữ liệu từ phía Frontend
+      allow delete: if false;
+
+      // Kiểm tra tính hợp lệ cơ bản của dữ liệu người chơi
+      function isValidPlayer(data) {
+        return data.name is string 
+          && data.name.trim().size() > 0 
+          && data.name.size() <= 60
+          && data.score is number 
+          && data.score >= 0
+          && (!('quizScore' in data) || (data.quizScore is number && data.quizScore >= 0))
+          && (!('reportScore' in data) || (data.reportScore is number && data.reportScore >= 0))
+          && (!('gameScore' in data) || (data.gameScore is number && data.gameScore >= 0))
+          && (!('levelBonus' in data) || (data.levelBonus is number && data.levelBonus >= 0))
+          && (!('gameLevel' in data) || (data.gameLevel is int && data.gameLevel >= 1));
+      }
+
+      // Cho phép tạo mới hồ sơ người chơi với số điểm ban đầu hợp lý (tối đa 300 điểm)
+      allow create: if isValidPlayer(request.resource.data)
+        && request.resource.data.score <= 300;
+
+      // Cho phép cập nhật điểm với các ràng buộc chống gian lận (Anti-cheat):
+      // - Dữ liệu cập nhật phải hợp lệ
+      // - Không được đổi tên người chơi thành tài khoản khác
+      // - Điểm mới phải lớn hơn hoặc bằng điểm cũ (không được hạ điểm vô lý)
+      // - Mỗi lần ghi nhận điểm chỉ được tăng tối đa 150 điểm (ngăn chặn hack bot cộng hàng triệu điểm)
+      allow update: if isValidPlayer(request.resource.data)
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.score >= resource.data.score
+        && (request.resource.data.score - resource.data.score) <= 150;
+    }
+
+    // =========================================================================
+    // 2. BÁO CÁO ĐIỂM NÓNG RÁC THẢI (TRASH REPORTS)
+    // =========================================================================
+    match /trash_reports/{reportId} {
+      // Cho phép đọc công khai để hiển thị các điểm ghim trên bản đồ Leaflet
+      allow read: if true;
+
+      // Tuyệt đối không cho phép xóa báo cáo từ phía client
+      allow delete: if false;
+
+      // Người dùng tạo mới báo cáo rác thải
+      allow create: if request.resource.data.reporterName is string
+        && request.resource.data.reporterName.trim().size() > 0
+        && request.resource.data.coords is list
+        && request.resource.data.coords.size() == 2
+        && request.resource.data.coords[0] is number
+        && request.resource.data.coords[1] is number
+        && (!('status' in request.resource.data) || request.resource.data.status in ['pending', 'approved', 'rejected']);
+
+      // Cập nhật trạng thái duyệt báo cáo (pending -> approved / rejected)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['status', 'approvedAt', 'rejectedAt']);
+    }
+
+    // =========================================================================
+    // 3. ĐĂNG KÝ TÌNH NGUYỆN VIÊN (VOLUNTEERS)
+    // =========================================================================
+    match /volunteers/{volunteerId} {
+      // BẢO MẬT RIÊNG TƯ: Không cho phép đọc công khai danh sách tình nguyện viên
+      // để tránh rò rỉ số điện thoại và email cá nhân ra ngoài
+      allow read: if false;
+
+      // Cho phép người dùng gửi form đăng ký tham gia dọn kênh
+      allow create: if request.resource.data.name is string
+        && request.resource.data.name.trim().size() > 0
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 9;
+
+      // Cấm chỉnh sửa hoặc xóa thông tin đăng ký
+      allow update, delete: if false;
+    }
+
+    // =========================================================================
+    // 4. THỐNG KÊ LƯỢT TRUY CẬP (SITE STATS)
+    // =========================================================================
+    match /site_stats/{statId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.count is int
+        && request.resource.data.count >= 0;
+      allow delete: if false;
+    }
+
+    // =========================================================================
+    // 5. QUY TẮC MẶC ĐỊNH CHO TẤT CẢ CÁC COLLECTION KHÁC
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
